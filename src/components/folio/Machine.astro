@@ -1,0 +1,127 @@
+---
+import Sketch from '../Sketch.astro';
+import { useT, type Lang } from '../../i18n';
+
+interface Props {
+  lang: Lang;
+  src: string;
+  title: string;
+  sketch: string;
+}
+
+const { lang, src, title, sketch } = Astro.props;
+const t = useT(lang);
+const address = src.replace(/^https?:\/\//, '').replace(/\/$/, '');
+---
+
+<section class="folio-section machine" aria-labelledby="machine-title" data-machine>
+  <header class="folio-section-head">
+    <h2 id="machine-title">{t('folio.try')}</h2>
+    <p>{t('folio.tryText', { title })}</p>
+  </header>
+
+  <div class="bench">
+    <div class="bar" aria-hidden="true">
+      <span class="rivet"></span><span class="rivet"></span><span class="rivet"></span>
+      <span class="address label">{address}</span>
+    </div>
+    <div class="stage" data-machine-stage data-src={src} data-title={t('folio.tryFrame', { title })}>
+      <div class="idle">
+        <Sketch name={sketch} state="pencil" class="idle-sketch" />
+        <button type="button" class="button primary" data-machine-start>{t('folio.tryStart')} ⚙</button>
+        <a class="label" href={src} target="_blank" rel="noopener">{t('folio.tryOpen')}</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { record } from '../../scripts/codex';
+  import { drawIn } from '../../scripts/ink';
+
+  document.addEventListener('click', (e) => {
+    const start = (e.target as Element).closest('[data-machine-start]');
+    if (!start) return;
+    const stage = start.closest<HTMLElement>('[data-machine-stage]')!;
+    drawIn(stage.querySelector<SVGSVGElement>('.idle-sketch'), 0, 12);
+    const frame = document.createElement('iframe');
+    frame.src = stage.dataset.src!;
+    frame.title = stage.dataset.title!;
+    frame.loading = 'eager';
+    frame.className = 'live';
+    frame.addEventListener('load', () => stage.classList.add('is-running'), { once: true });
+    stage.append(frame);
+    stage.classList.add('is-starting');
+    record('demo');
+  });
+</script>
+
+<style>
+  .bench {
+    border: 1px solid var(--paper-edge);
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--paper-deep);
+    box-shadow: var(--shadow);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--paper-edge);
+    background: color-mix(in srgb, var(--paper) 70%, var(--paper-deep));
+  }
+  .rivet {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid var(--ink-3);
+    background: radial-gradient(circle at 35% 30%, var(--paper), var(--paper-edge));
+  }
+  .address {
+    margin-left: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .stage {
+    position: relative;
+    height: clamp(560px, 78vh, 860px);
+  }
+  .idle {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 18px;
+    transition: opacity 0.6s;
+  }
+  .idle :global(.idle-sketch) {
+    width: 180px;
+    height: 180px;
+  }
+  .stage :global(iframe.live) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #fff;
+    opacity: 0;
+    transition: opacity 0.8s 0.2s;
+  }
+  .stage.is-running :global(iframe.live) {
+    opacity: 1;
+  }
+  .stage.is-running .idle {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .stage.is-starting [data-machine-start] {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+</style>

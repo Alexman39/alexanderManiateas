@@ -1,0 +1,73 @@
+---
+import { inline } from '../../data/text';
+import { useT, type Lang } from '../../i18n';
+
+interface Props {
+  lang: Lang;
+  items: { title: string; text: string }[];
+}
+
+const { lang, items } = Astro.props;
+const t = useT(lang);
+const letters = 'ABCDEFGHIJ';
+---
+
+<!-- What the machine does, labelled like the parts in one of Leonardo's diagrams. -->
+<section class="folio-section parts" aria-labelledby="parts-title">
+  <header class="folio-section-head">
+    <h2 id="parts-title">{t('folio.how')}</h2>
+  </header>
+  <ol>
+    {
+      items.map((f, i) => (
+        <li>
+          <span class="letter" aria-hidden="true">{letters[i]}</span>
+          <div>
+            <h3>{f.title}</h3>
+            <p set:html={inline(f.text)} />
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</section>
+
+<style>
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    gap: 16px;
+  }
+  li {
+    display: flex;
+    gap: 18px;
+    padding: 22px 24px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--card);
+  }
+  .letter {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--sanguine);
+    color: var(--sanguine);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 600;
+    font-size: 1.3rem;
+  }
+  h3 {
+    font-size: 1.6rem;
+    margin-bottom: 4px;
+  }
+  p {
+    color: var(--ink-2);
+  }
+</style>

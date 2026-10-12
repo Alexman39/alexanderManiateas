@@ -1,0 +1,74 @@
+---
+import { useT, type Lang } from '../../i18n';
+
+interface Props {
+  lang: Lang;
+  items: { value: string; label: string }[];
+}
+
+const { lang, items } = Astro.props;
+const t = useT(lang);
+---
+
+<section class="folio-section measures" aria-labelledby="measures-title">
+  <h2 id="measures-title" class="label">{t('folio.measures')}</h2>
+  <dl>
+    {
+      items.map((m) => (
+        <div>
+          <dt>{m.label}</dt>
+          <dd>{m.value}</dd>
+        </div>
+      ))
+    }
+  </dl>
+</section>
+
+<style>
+  .measures h2 {
+    margin-bottom: 18px;
+  }
+  dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    margin: 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  dl div {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 22px 24px 24px 0;
+  }
+  dl div + div {
+    padding-left: 24px;
+    border-left: 1px solid var(--line);
+  }
+  dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2.6rem, 5vw, 3.8rem);
+    line-height: 1;
+    color: var(--sanguine);
+  }
+  dt {
+    color: var(--ink-2);
+    font-size: 0.92rem;
+    max-width: 24ch;
+  }
+  @media (max-width: 640px) {
+    dl {
+      grid-template-columns: 1fr 1fr;
+    }
+    dl div:nth-child(odd) {
+      padding-left: 0;
+      border-left: 0;
+    }
+    dl div:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+  }
+</style>

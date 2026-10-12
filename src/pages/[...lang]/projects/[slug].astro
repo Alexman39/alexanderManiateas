@@ -4,6 +4,10 @@ import { render } from 'astro:content';
 import { Image } from 'astro:assets';
 import Base from '../../../layouts/Base.astro';
 import Sketch from '../../../components/Sketch.astro';
+import Measures from '../../../components/folio/Measures.astro';
+import Plates from '../../../components/folio/Plates.astro';
+import Machine from '../../../components/folio/Machine.astro';
+import Parts from '../../../components/folio/Parts.astro';
 import { domains, statuses } from '../../../data/codex';
 import { langParams, url, useT, type Lang } from '../../../i18n';
 import { getProjects, type Project } from '../../../i18n/content';
@@ -147,6 +151,11 @@ const letters = 'ABCDEFGHIJ';
         }
       </div>
     </div>
+
+    {p.highlights.length > 0 && <Measures lang={lang} items={p.highlights} />}
+    {p.gallery.length > 0 && <Plates lang={lang} plates={p.gallery} />}
+    {p.embed && <Machine lang={lang} src={p.embed} title={p.title} sketch={p.sketch} />}
+    {p.features.length > 0 && <Parts lang={lang} items={p.features} />}
 
     <div class="account">
       <div class="prose" lang={project.translated ? undefined : 'en'}>

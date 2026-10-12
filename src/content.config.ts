@@ -33,6 +33,18 @@ const projects = defineCollection({
       plan: z.array(z.string()).default([]),
       capolavoro: z.boolean().default(false),
       size: z.enum(['small', 'medium', 'large']).optional(),
+
+      /* Finished work: the folio grows plates, measurements and a working machine. */
+      /** Short measured facts, shown as large numerals. */
+      highlights: z.array(z.object({ value: z.string(), label: z.string() })).default([]),
+      /** What the thing does, as lettered parts of the machine. */
+      features: z.array(z.object({ title: z.string(), text: z.string() })).default([]),
+      /** Screenshots, shown as plates (tavole). `phone` gives a narrow frame. */
+      gallery: z
+        .array(z.object({ src: image(), caption: z.string(), phone: z.boolean().default(false) }))
+        .default([]),
+      /** A live app that can run inside the folio. */
+      embed: z.url().optional(),
     }),
 });
 
@@ -50,6 +62,10 @@ const projectsEl = defineCollection({
     stack: z.array(z.string()).optional(),
     note: z.string(),
     plan: z.array(z.string()).optional(),
+    highlights: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    features: z.array(z.object({ title: z.string(), text: z.string() })).optional(),
+    /** Gallery captions, in the same order as the English file's gallery. */
+    captions: z.array(z.string()).optional(),
   }),
 });
 

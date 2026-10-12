@@ -13,6 +13,9 @@ logo: ../../assets/projects/metaforiki-lappas.png
 sketch: cart
 desk: { x: 640, y: 330, size: 250 }
 note: In logistics, trust is the cargo.
+gallery:
+  - { src: ../../assets/projects/metaforiki-lappas/home.jpg, caption: 'The home page, with buttons to call or ask for a quote straight away' }
+  - { src: ../../assets/projects/metaforiki-lappas/company.jpg, caption: 'The company and its fleet' }
 ---
 
 ## The brief

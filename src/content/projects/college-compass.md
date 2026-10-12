@@ -19,6 +19,10 @@ plan:
   - Every course from the previous two years
   - A section to prepare for final year
   - A CMS admin dashboard so content stays fresh
+gallery:
+  - { src: ../../assets/projects/college-compass/courses.jpg, caption: "This semester's courses, one card each" }
+  - { src: ../../assets/projects/college-compass/welcome.jpg, caption: 'The welcome page' }
+  - { src: ../../assets/projects/college-compass/phone.jpg, caption: 'The course list on a phone', phone: true }
 ---
 
 ## The brief

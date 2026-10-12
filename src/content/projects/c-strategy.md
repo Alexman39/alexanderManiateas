@@ -14,6 +14,10 @@ sketch: trebuchet
 desk: { x: 230, y: 390, size: 250 }
 related: [metaforiki-lappas]
 note: Strategy first, pixels second.
+gallery:
+  - { src: ../../assets/projects/c-strategy/home.jpg, caption: 'The home page: strategy, web design and customer experience' }
+  - { src: ../../assets/projects/c-strategy/phone.jpg, caption: 'The home page on a phone', phone: true }
+  - { src: ../../assets/projects/c-strategy/about.jpg, caption: 'Further down: why looking the part matters' }
 ---
 
 ## The brief

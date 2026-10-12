@@ -33,6 +33,9 @@ export async function getProjects(lang: Lang): Promise<Project[]> {
         stack: g.data.stack ?? p.data.stack,
         note: g.data.note,
         plan: g.data.plan ?? p.data.plan,
+        highlights: g.data.highlights ?? p.data.highlights,
+        features: g.data.features ?? p.data.features,
+        gallery: p.data.gallery.map((plate, i) => ({ ...plate, caption: g.data.captions?.[i] ?? plate.caption })),
       },
     };
   });

@@ -1,14 +1,16 @@
 ---
-import type { CollectionEntry } from 'astro:content';
 import Sketch from '../Sketch.astro';
 import { domains, statuses, type Domain } from '../../data/codex';
-import { url } from '../../data/site';
+import { url, useT, type Lang } from '../../i18n';
+import type { Project } from '../../i18n/content';
 
 interface Props {
-  projects: CollectionEntry<'projects'>[];
+  lang: Lang;
+  projects: Project[];
 }
 
-const { projects } = Astro.props;
+const { lang, projects } = Astro.props;
+const t = useT(lang);
 const order = Object.keys(domains) as Domain[];
 const groups = order
   .map((d) => ({ key: d, ...domains[d], items: projects.filter((p) => p.data.domain === d) }))
@@ -22,7 +24,7 @@ const groups = order
         <header class="group-head">
           <h2 id={`group-${g.key}`}>{g.name}</h2>
           <p>
-            <span class="label">{g.english}</span> {g.blurb}
+            <span class="label">{g.gloss[lang]}</span> {g.blurb[lang]}
           </p>
         </header>
         <ul class="cards">
@@ -30,12 +32,12 @@ const groups = order
             const unfinished = p.data.status === 'non-finito';
             return (
               <li>
-                <a class="card" href={url(`projects/${p.id}`)} data-card={p.id}>
+                <a class="card" href={url(`projects/${p.id}`, lang)} data-card={p.id}>
                   <div class="card-art" transition:name={`sketch-${p.id}`}>
                     <Sketch name={p.data.sketch} state={unfinished ? 'unfinished' : 'ink'} />
                   </div>
                   <span class="label">
-                    f. {p.data.folio} · {statuses[p.data.status]}
+                    f. {p.data.folio} · {statuses[p.data.status][lang]}
                     {p.data.capolavoro && <> · capolavoro</>}
                   </span>
                   <h3>{p.data.title}</h3>
@@ -44,7 +46,7 @@ const groups = order
                   <span class="card-foot">
                     <span class="label">{p.data.stack.join(' · ')}</span>
                     <span class="studied label" data-studied-badge hidden>
-                      studied
+                      {t('index.studied')}
                     </span>
                   </span>
                 </a>

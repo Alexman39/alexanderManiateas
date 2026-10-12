@@ -4,6 +4,12 @@ import { rankFor, seals, type CodexMeta } from '../data/codex';
 type State = { visited: string[]; seals: string[]; events: string[] };
 
 const KEY = 'codex:v1';
+
+const lang = () => (document.documentElement.lang === 'el' ? 'el' : 'en');
+const RANK_TOAST = {
+  en: { title: 'You are now {rank}', body: '{gloss} of the workshop.' },
+  el: { title: 'Είστε πλέον {rank}', body: '{gloss} του εργαστηρίου.' },
+};
 const empty = (): State => ({ visited: [], seals: [], events: [] });
 
 export function load(): State {
@@ -66,10 +72,11 @@ function commit(next: State) {
 
   for (const id of newSeals) {
     const seal = seals.find((s) => s.id === id)!;
-    toast(seal.glyph, seal.name, seal.hint);
+    toast(seal.glyph, seal.name, seal.hint[lang()]);
   }
   if (after.rank.id !== before.rank.id) {
-    toast('✦', `You are now ${after.rank.name}`, `${after.rank.english} of the workshop.`);
+    const text = RANK_TOAST[lang()];
+    toast('✦', text.title.replace('{rank}', after.rank.name), text.body.replace('{gloss}', after.rank.gloss[lang()]));
   }
   document.dispatchEvent(new CustomEvent('codex:change', { detail: { newSeals, ...after } }));
 }

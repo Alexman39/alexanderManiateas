@@ -1,10 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
 import Sketch from '../components/Sketch.astro';
-import { url } from '../data/site';
+import { url } from '../i18n';
 ---
 
-<Base title="Folio missing">
+<!-- GitHub Pages serves one 404 for every URL, so it speaks both languages. -->
+<Base lang="en" title="Folio missing · Χαμένο φύλλο">
   <div class="page missing">
     <Sketch name="lens" state="unfinished" class="art" />
     <p class="label">Errore 404</p>
@@ -13,6 +14,17 @@ import { url } from '../data/site';
     <div class="actions">
       <a class="button primary" href={url('projects')}>Open the codex</a>
       <a class="button" href={url('')}>Home</a>
+    </div>
+
+    <hr class="rule" />
+
+    <div lang="el" class="greek">
+      <h2>Αυτό το φύλλο έχει σκιστεί από τον κώδικα.</h2>
+      <p class="lead">Όπως πολλές σελίδες του Λεονάρντο, χάθηκε στην πορεία. Το υπόλοιπο σημειωματάριο είναι ακόμη εδώ.</p>
+      <div class="actions">
+        <a class="button primary" href={url('projects', 'el')}>Ανοίξτε τον κώδικα</a>
+        <a class="button" href={url('', 'el')}>Αρχική</a>
+      </div>
     </div>
   </div>
 </Base>
@@ -31,6 +43,17 @@ import { url } from '../data/site';
   }
   h1 {
     font-size: clamp(2.2rem, 5vw, 3.6rem);
+  }
+  .rule {
+    width: 100%;
+  }
+  .greek {
+    display: grid;
+    justify-items: center;
+    gap: 18px;
+  }
+  .greek h2 {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
   }
   .actions {
     display: flex;

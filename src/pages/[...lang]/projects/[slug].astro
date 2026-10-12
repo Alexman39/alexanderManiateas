@@ -1,42 +1,53 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
 import { Image } from 'astro:assets';
-import Base from '../../layouts/Base.astro';
-import Sketch from '../../components/Sketch.astro';
-import { domains, statuses } from '../../data/codex';
-import { url } from '../../data/site';
+import Base from '../../../layouts/Base.astro';
+import Sketch from '../../../components/Sketch.astro';
+import { domains, statuses } from '../../../data/codex';
+import { langParams, url, useT, type Lang } from '../../../i18n';
+import { getProjects, type Project } from '../../../i18n/content';
 
 export const getStaticPaths = (async () => {
-  const projects = (await getCollection('projects')).sort((a, b) => a.data.folio - b.data.folio);
-  return projects.map((project, i) => ({
-    params: { slug: project.id },
-    props: {
-      project,
-      prev: projects[(i - 1 + projects.length) % projects.length],
-      next: projects[(i + 1) % projects.length],
-    },
-  }));
+  const pages = [];
+  for (const { params } of langParams()) {
+    const lang: Lang = (params.lang as Lang) ?? 'en';
+    const projects = await getProjects(lang);
+    pages.push(
+      ...projects.map((project, i) => ({
+        params: { lang: params.lang, slug: project.id },
+        props: {
+          lang,
+          project,
+          prev: projects[(i - 1 + projects.length) % projects.length],
+          next: projects[(i + 1) % projects.length],
+        },
+      })),
+    );
+  }
+  return pages;
 }) satisfies GetStaticPaths;
 
 interface Props {
-  project: CollectionEntry<'projects'>;
-  prev: CollectionEntry<'projects'>;
-  next: CollectionEntry<'projects'>;
+  lang: Lang;
+  project: Project;
+  prev: Project;
+  next: Project;
 }
 
-const { project, prev, next } = Astro.props;
+const { lang, project, prev, next } = Astro.props;
+const t = useT(lang);
 const p = project.data;
-const { Content } = await render(project);
+const { Content } = await render(project.entry);
 const unfinished = p.status === 'non-finito';
 const domain = domains[p.domain];
 const letters = 'ABCDEFGHIJ';
 ---
 
-<Base title={p.title} description={p.summary}>
+<Base lang={lang} title={p.title} description={p.summary}>
   <article class="folio" data-folio={project.id}>
-    <nav class="crumbs label" aria-label="Breadcrumb">
-      <a href={url('projects')}>← Il Codice</a>
+    <nav class="crumbs label" aria-label={t('folio.breadcrumb')}>
+      <a href={url('projects', lang)}>← Il Codice</a>
       <span aria-hidden="true">/</span>
       <span>{domain.name}</span>
       <span aria-hidden="true">/</span>
@@ -47,38 +58,38 @@ const letters = 'ABCDEFGHIJ';
       <!-- Verso: the drawing -->
       <figure class="page verso">
         <div class="plate" transition:name={`sketch-${project.id}`}>
-          <Sketch name={p.sketch} state={unfinished ? 'unfinished' : 'ink'} label={`Ink sketch for ${p.title}`} class="plate-sketch" />
+          <Sketch name={p.sketch} state={unfinished ? 'unfinished' : 'ink'} label={t('folio.sketchLabel', { title: p.title })} class="plate-sketch" />
         </div>
         <figcaption>
           <button class="mirror" type="button">{p.note}</button>
-          <span class="label">Margin note · hover or tap to read</span>
+          <span class="label">{t('folio.noteHint')}</span>
         </figcaption>
         <span class="folio-number" aria-hidden="true">{p.folio}v</span>
       </figure>
 
       <!-- Recto: the account -->
       <div class="page recto">
-        <p class="label domain">{domain.name} · {domain.english}</p>
+        <p class="label domain">{domain.name} · {domain.gloss[lang]}</p>
         <h1>{p.title}</h1>
         <p class="motto italian">{p.motto}</p>
 
         <div class="seals-row">
-          <span class:list={['status', `status-${p.status}`]}>{statuses[p.status]}</span>
+          <span class:list={['status', `status-${p.status}`]}>{statuses[p.status][lang]}</span>
           {p.capolavoro && <span class="status status-capolavoro">Capolavoro</span>}
-          <span class="studied-stamp" data-studied-stamp hidden>Studied</span>
+          <span class="studied-stamp" data-studied-stamp hidden>{t('folio.studied')}</span>
         </div>
 
         <p class="summary">{p.summary}</p>
 
         <dl class="facts">
           <div>
-            <dt class="label">Role</dt>
+            <dt class="label">{t('folio.role')}</dt>
             <dd>{p.role}</dd>
           </div>
           {
             p.years && (
               <div>
-                <dt class="label">Years</dt>
+                <dt class="label">{t('folio.years')}</dt>
                 <dd>{p.years}</dd>
               </div>
             )
@@ -86,8 +97,8 @@ const letters = 'ABCDEFGHIJ';
           {
             p.size && (
               <div>
-                <dt class="label">Scale</dt>
-                <dd>{p.size[0].toUpperCase() + p.size.slice(1)}</dd>
+                <dt class="label">{t('folio.scale')}</dt>
+                <dd>{t(`scale.${p.size}`)}</dd>
               </div>
             )
           }
@@ -96,7 +107,7 @@ const letters = 'ABCDEFGHIJ';
         {
           p.stack.length > 0 && (
             <section class="components" aria-labelledby="components-title">
-              <h2 id="components-title" class="label">Componenti · Stack</h2>
+              <h2 id="components-title" class="label">{t('folio.stack')}</h2>
               <ol>
                 {p.stack.map((s, i) => (
                   <li>
@@ -114,12 +125,12 @@ const letters = 'ABCDEFGHIJ';
             <div class="actions">
               {p.links.live && (
                 <a class="button primary" href={p.links.live} target="_blank" rel="noopener">
-                  Visit the site ↗
+                  {t('folio.visit')}
                 </a>
               )}
               {p.links.repo && (
                 <a class="button" href={p.links.repo} target="_blank" rel="noopener">
-                  Source ↗
+                  {t('folio.source')}
                 </a>
               )}
             </div>
@@ -129,8 +140,8 @@ const letters = 'ABCDEFGHIJ';
         {
           p.logo && (
             <div class="patron">
-              <Image src={p.logo} alt={`${p.title} logo`} width={72} height={72} />
-              <span class="label">Mark of the work</span>
+              <Image src={p.logo} alt={t('folio.logoAlt', { title: p.title })} width={144} height={144} />
+              <span class="label">{t('folio.mark')}</span>
             </div>
           )
         }
@@ -138,15 +149,16 @@ const letters = 'ABCDEFGHIJ';
     </div>
 
     <div class="account">
-      <div class="prose">
+      <div class="prose" lang={project.translated ? undefined : 'en'}>
+        {!project.translated && <p class="notice label">{t('notice.englishOnly')}</p>}
         <Content />
       </div>
 
       {
         p.plan.length > 0 && (
           <aside class:list={['plan', { unfinished }]}>
-            <h2>{unfinished ? 'Piano di lavoro' : 'Next on the bench'}</h2>
-            <p class="label">{unfinished ? 'Workshop plan · not yet built' : 'What comes next'}</p>
+            <h2>{unfinished ? 'Piano di lavoro' : t('folio.planTitle')}</h2>
+            <p class="label">{unfinished ? t('folio.planUnfinished') : t('folio.planSub')}</p>
             <ul>
               {p.plan.map((item) => (
                 <li>{item}</li>
@@ -155,7 +167,7 @@ const letters = 'ABCDEFGHIJ';
             {unfinished && (
               <p class="quote">
                 <span class="italian">“Dimmi se mai fu fatta alcuna cosa.”</span>
-                <span class="label">Tell me if anything was ever finished · Leonardo</span>
+                <span class="label">{t('folio.quote')}</span>
               </p>
             )}
           </aside>
@@ -163,13 +175,13 @@ const letters = 'ABCDEFGHIJ';
       }
     </div>
 
-    <nav class="turn" aria-label="Turn the page">
-      <a href={url(`projects/${prev.id}`)} class="turn-prev">
+    <nav class="turn" aria-label={t('folio.turn')}>
+      <a href={url(`projects/${prev.id}`, lang)} class="turn-prev">
         <span class="label">← f. {prev.data.folio}</span>
         <strong>{prev.data.title}</strong>
       </a>
-      <a href={url('projects')} class="turn-desk label">Back to the codex</a>
-      <a href={url(`projects/${next.id}`)} class="turn-next">
+      <a href={url('projects', lang)} class="turn-desk label">{t('folio.back')}</a>
+      <a href={url(`projects/${next.id}`, lang)} class="turn-next">
         <span class="label">f. {next.data.folio} →</span>
         <strong>{next.data.title}</strong>
       </a>
@@ -178,8 +190,8 @@ const letters = 'ABCDEFGHIJ';
 </Base>
 
 <script>
-  import { load, visit } from '../../scripts/codex';
-  import { drawIn } from '../../scripts/ink';
+  import { load, visit } from '../../../scripts/codex';
+  import { drawIn } from '../../../scripts/ink';
 
   document.addEventListener('astro:page-load', () => {
     const folio = document.querySelector<HTMLElement>('[data-folio]');

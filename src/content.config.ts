@@ -36,6 +36,23 @@ const projects = defineCollection({
     }),
 });
 
+/**
+ * Greek translations of projects. Same file names as src/content/projects; only the words are here.
+ * Desk position, sketch, links and status always come from the English file.
+ */
+const projectsEl = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/projects-el' }),
+  schema: z.object({
+    title: z.string().optional(),
+    summary: z.string(),
+    role: z.string(),
+    years: z.string().optional(),
+    stack: z.array(z.string()).optional(),
+    note: z.string(),
+    plan: z.array(z.string()).optional(),
+  }),
+});
+
 const articles = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/articles' }),
   schema: z.object({
@@ -45,4 +62,14 @@ const articles = defineCollection({
   }),
 });
 
-export const collections = { projects, articles };
+/** Greek articles. Same file names as src/content/articles; an article without one falls back to English. */
+const articlesEl = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/articles-el' }),
+  schema: z.object({
+    title: z.string(),
+    date: z.coerce.date(),
+    summary: z.string(),
+  }),
+});
+
+export const collections = { projects, projectsEl, articles, articlesEl };

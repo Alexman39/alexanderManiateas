@@ -1,0 +1,75 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import { formatDate, langParams, url, useT, type Lang } from '../../../i18n';
+import { getArticles, type Article } from '../../../i18n/content';
+
+export const getStaticPaths = (async () => {
+  const pages = [];
+  for (const { params } of langParams()) {
+    const lang: Lang = (params.lang as Lang) ?? 'en';
+    for (const article of await getArticles(lang)) {
+      pages.push({ params: { lang: params.lang, slug: article.id }, props: { lang, article } });
+    }
+  }
+  return pages;
+}) satisfies GetStaticPaths;
+
+interface Props {
+  lang: Lang;
+  article: Article;
+}
+
+const { lang, article } = Astro.props;
+const t = useT(lang);
+const { Content } = await render(article.entry);
+const date = formatDate(article.data.date, lang);
+---
+
+<Base lang={lang} title={article.data.title} description={article.data.summary}>
+  <article class="page article" lang={article.translated ? undefined : 'en'}>
+    <a class="label back" href={url('articles', lang)} lang={lang}>{t('articles.all')}</a>
+    {!article.translated && <p class="notice label" lang={lang}>{t('notice.englishOnly')}</p>}
+    <header>
+      <time class="label" datetime={article.data.date.toISOString()}>{date}</time>
+      <h1>{article.data.title}</h1>
+      <p class="lead">{article.data.summary}</p>
+    </header>
+    <hr class="rule" />
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</Base>
+
+<style>
+  .article {
+    max-width: 820px;
+  }
+  .back {
+    display: inline-block;
+    margin-bottom: 28px;
+    text-decoration: none;
+    color: var(--sanguine);
+  }
+  header {
+    display: grid;
+    gap: 16px;
+  }
+  h1 {
+    font-size: clamp(2.4rem, 5vw, 3.8rem);
+  }
+  .prose {
+    font-size: 1.12rem;
+  }
+  .prose :global(p:first-child::first-letter) {
+    float: left;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 4.2em;
+    line-height: 0.85;
+    padding: 0.06em 0.1em 0 0;
+    color: var(--sanguine);
+  }
+</style>

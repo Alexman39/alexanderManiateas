@@ -3,6 +3,10 @@
 @import '@fontsource-variable/manrope/wght.css';
 @import '@fontsource/ibm-plex-mono/400.css';
 @import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource-variable/eb-garamond/wght.css';
+@import '@fontsource-variable/eb-garamond/wght-italic.css';
+@import '@fontsource/fira-mono/400.css';
+@import '@fontsource/fira-mono/500.css';
 
 /* ------------------------------------------------------------------ tokens */
 
@@ -26,9 +30,10 @@
   --grain-blend: multiply;
   --vignette: rgb(120 85 40 / 0.28);
 
-  --font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', Georgia, serif;
+  /* Cormorant and Plex have no Greek letters; EB Garamond and Fira Mono step in for those characters only. */
+  --font-display: 'Cormorant Garamond Variable', 'EB Garamond Variable', Georgia, serif;
   --font-body: 'Manrope Variable', 'Manrope', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-mono: 'IBM Plex Mono', 'Fira Mono', ui-monospace, monospace;
 
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --gutter: clamp(16px, 4vw, 48px);
@@ -162,6 +167,11 @@ h3 {
   letter-spacing: -0.01em;
   margin: 0;
   text-wrap: balance;
+}
+
+/* The Greek glyphs come from EB Garamond, which runs heavier than Cormorant. */
+:lang(el) :is(h1, h2, h3) {
+  font-weight: 500;
 }
 
 p {
@@ -416,6 +426,14 @@ button {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-3);
+}
+
+/* Shown on Greek pages whose text hasn't been translated yet. */
+.notice {
+  padding: 10px 14px;
+  border: 1px dashed var(--paper-edge);
+  border-radius: 10px;
+  color: var(--ink-2);
 }
 
 /* Wax-seal toasts, created by scripts/codex.ts. */

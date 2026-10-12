@@ -1,5 +1,13 @@
 ---
 import { nav, site, socials } from '../data/site';
+import { useT, type Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useT(lang);
 const year = new Date().getFullYear();
 ---
 
@@ -7,10 +15,10 @@ const year = new Date().getFullYear();
   <div class="inner">
     <div class="sign">
       <p class="italian">“Tristo è quel discepolo che non avanza il suo maestro.”</p>
-      <p class="label">Poor is the pupil who does not surpass his master · Leonardo, notebooks</p>
+      <p class="label">{t('footer.quote')}</p>
     </div>
-    <nav class="links" aria-label="Footer">
-      {nav.map((n) => <a href={n.href}>{n.label}</a>)}
+    <nav class="links" aria-label={t('footer.nav')}>
+      {nav(lang).map((n) => <a href={n.href}>{n.label}</a>)}
     </nav>
     <div class="links">
       <a href={`mailto:${site.email}`}>{site.email}</a>
@@ -24,9 +32,9 @@ const year = new Date().getFullYear();
     </div>
   </div>
   <div class="base">
-    <span class="label">© {year} {site.name}</span>
-    <button class="mirror label" type="button" aria-label="Written right to left, read left to right">
-      Written right to left, read left to right
+    <span class="label">© {year} {t('site.name')}</span>
+    <button class="mirror label" type="button">
+      {t('footer.mirror')}
     </button>
   </div>
 </footer>

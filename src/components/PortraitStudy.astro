@@ -2,6 +2,12 @@
 import { Image } from 'astro:assets';
 import portrait from '../assets/photos/profile.jpg';
 
+interface Props {
+  alt: string;
+}
+
+const { alt } = Astro.props;
+
 // Proportion study around the portrait: Vitruvian circle and square, golden sections, a scale bar.
 const phi = (1 + Math.sqrt(5)) / 2;
 const sq = { x: 55, y: 65, s: 290 };
@@ -40,7 +46,7 @@ const scale = Array.from({ length: 11 }, (_, i) => sq.x + (i * sq.s) / 10);
     <text x="196" y="395">I · II · III</text>
   </svg>
   <div class="portrait">
-    <Image src={portrait} alt="Portrait of Alexander Maniateas" widths={[320, 640]} sizes="(max-width: 900px) 50vw, 260px" loading="eager" />
+    <Image src={portrait} alt={alt} widths={[320, 640]} sizes="(max-width: 900px) 50vw, 260px" loading="eager" />
   </div>
 </figure>
 

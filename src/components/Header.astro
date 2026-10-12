@@ -1,30 +1,41 @@
 ---
-import { nav, site, url } from '../data/site';
+import { nav, url } from '../data/site';
+import { langNames, langs, useT, type Lang } from '../i18n';
 
-const here = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '');
+interface Props {
+  lang: Lang;
+  /** This page in the other language. */
+  altHref: string;
+}
+
+const { lang, altHref } = Astro.props;
+const t = useT(lang);
+const other = langs.find((l) => l !== lang)!;
+const home = url('', lang).replace(/\/$/, '');
+const here = Astro.url.pathname.replace(/\.html$/, '').replace(/\/index$/, '').replace(/\/$/, '');
 const isActive = (href: string) => {
   const h = href.replace(/\/$/, '');
-  return h === url('').replace(/\/$/, '') ? here === h : here === h || here.startsWith(`${h}/`);
+  return h === home ? here === h : here === h || here.startsWith(`${h}/`);
 };
 ---
 
-<header class="site-header" transition:persist="site-header">
-  <a class="brand" href={url('')} aria-label={`${site.name}, home`}>
+<header class="site-header" transition:persist={`site-header-${lang}`} data-home={home}>
+  <a class="brand" href={url('', lang)} aria-label={t('nav.homeAria')}>
     <svg class="monogram" viewBox="0 0 48 48" aria-hidden="true">
       <circle cx="24" cy="24" r="22" />
       <circle cx="24" cy="24" r="18.5" class="thin" />
       <text x="24" y="30.5" text-anchor="middle">AM</text>
     </svg>
     <span class="brand-name">
-      <span>{site.name}</span>
-      <span class="label">{site.role} · {site.city}</span>
+      <span>{t('site.name')}</span>
+      <span class="label">{t('site.role')} · {t('site.city')}</span>
     </span>
   </a>
 
-  <nav class="nav" aria-label="Main">
+  <nav class="nav" aria-label={t('nav.main')}>
     <ul id="nav-list">
       {
-        nav.map((item) => (
+        nav(lang).map((item) => (
           <li>
             <a href={item.href} data-nav aria-current={isActive(item.href) ? 'page' : undefined}>
               {item.label}
@@ -36,19 +47,31 @@ const isActive = (href: string) => {
   </nav>
 
   <div class="tools">
-    <a class="rank-chip" href={url('projects')} data-rank-chip title="Your rank in the workshop">
+    <a class="rank-chip" href={url('projects', lang)} data-rank-chip title={t('rank.title')}>
       <span class="rank-seal" aria-hidden="true"></span>
       <span data-rank-name>Garzone</span>
       <span class="rank-count" data-rank-count></span>
     </a>
-    <button class="icon-button" type="button" data-theme-toggle aria-label="Toggle night study">
+    <a
+      class="lang-switch"
+      href={altHref}
+      hreflang={other}
+      lang={other}
+      data-lang-switch={other}
+      title={t('lang.switch')}
+      data-astro-reload
+    >
+      <span aria-hidden="true">{langNames[other].short}</span>
+      <span class="visually-hidden">{t('lang.switch')}</span>
+    </a>
+    <button class="icon-button" type="button" data-theme-toggle aria-label={t('theme.toggle')}>
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <g class="sun"><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7" /></g>
         <g class="candle"><path d="M9 21h6M10 21V11h4v10M12 11V9" /><path d="M12 3.5c1.6 1.7 1.9 3 0 4.6-1.9-1.6-1.6-2.9 0-4.6Z" /></g>
       </svg>
     </button>
     <button class="icon-button menu-button" type="button" aria-expanded="false" aria-controls="nav-list" data-menu>
-      <span class="visually-hidden">Menu</span>
+      <span class="visually-hidden">{t('nav.menu')}</span>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h16" /></svg>
     </button>
   </div>
@@ -60,8 +83,8 @@ const isActive = (href: string) => {
   function syncHeader() {
     const header = document.querySelector<HTMLElement>('.site-header');
     if (!header) return;
-    const here = location.pathname.replace(/\.html$/, '').replace(/\/$/, '');
-    const home = (import.meta.env.BASE_URL as string).replace(/\/$/, '');
+    const here = location.pathname.replace(/\.html$/, '').replace(/\/index$/, '').replace(/\/$/, '');
+    const home = header.dataset.home!;
     header.querySelectorAll<HTMLAnchorElement>('[data-nav]').forEach((a) => {
       const h = new URL(a.href).pathname.replace(/\/$/, '');
       const active = h === home ? here === h : here === h || here.startsWith(`${h}/`);
@@ -71,11 +94,29 @@ const isActive = (href: string) => {
     const p = progress();
     header.querySelector('[data-rank-name]')!.textContent = p.rank.name;
     header.querySelector('[data-rank-count]')!.textContent = `${p.studied}/${p.total}`;
+    // The header persists across pages, so point the switch at this page's translation.
+    const sw = header.querySelector<HTMLAnchorElement>('[data-lang-switch]');
+    const alt = sw && document.querySelector<HTMLLinkElement>(`link[rel="alternate"][hreflang="${sw.dataset.langSwitch}"]`);
+    if (sw && alt) sw.href = new URL(alt.href).pathname;
     header.classList.remove('menu-open');
     header.querySelector('[data-menu]')?.setAttribute('aria-expanded', 'false');
   }
 
   document.addEventListener('astro:page-load', syncHeader);
+
+  // A visitor who chose a language gets it again when they next arrive from elsewhere.
+  document.addEventListener('astro:page-load', () => {
+    try {
+      if (sessionStorage.getItem('lang-checked')) return;
+      sessionStorage.setItem('lang-checked', '1');
+      const saved = localStorage.getItem('lang');
+      const current = document.documentElement.lang;
+      const cameFromHere = document.referrer && new URL(document.referrer).origin === location.origin;
+      if (!saved || saved === current || cameFromHere) return;
+      const alt = document.querySelector<HTMLLinkElement>(`link[rel="alternate"][hreflang="${saved}"]`);
+      if (alt) location.replace(new URL(alt.href).pathname);
+    } catch {}
+  });
   document.addEventListener('codex:change', syncHeader);
 
   document.addEventListener('click', (e) => {
@@ -88,6 +129,12 @@ const isActive = (href: string) => {
       root.dataset.theme = dark ? 'light' : 'dark';
       try {
         localStorage.setItem('theme', root.dataset.theme);
+      } catch {}
+    }
+    const sw = target.closest<HTMLElement>('[data-lang-switch]');
+    if (sw) {
+      try {
+        localStorage.setItem('lang', sw.dataset.langSwitch!);
       } catch {}
     }
     const menu = target.closest('[data-menu]');
@@ -271,6 +318,26 @@ const isActive = (href: string) => {
     :global(:root:not([data-theme='light'])) .icon-button .candle {
       display: inline;
     }
+  }
+
+  .lang-switch {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .lang-switch:hover {
+    color: var(--sanguine);
+    border-color: var(--ink-3);
+    background: var(--sanguine-wash);
   }
 
   .menu-button {

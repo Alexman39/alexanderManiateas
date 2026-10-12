@@ -337,7 +337,8 @@ function initCodex(root: HTMLElement) {
       const studied = state.visited.includes(slug);
       const svg = node.querySelector<SVGSVGElement>('svg.sketch')!;
       node.classList.toggle('is-studied', studied);
-      node.querySelector('[data-node-state]')!.textContent = studied ? '(studied)' : '(not yet studied)';
+      const stateEl = node.querySelector<HTMLElement>('[data-node-state]')!;
+      stateEl.textContent = (studied ? stateEl.dataset.studied : stateEl.dataset.notStudied) ?? '';
       root.querySelector(`[data-map-node="${slug}"]`)?.classList.toggle('studied', studied);
       if (!node.classList.contains('unfinished')) {
         svg.classList.toggle('is-pencil', !studied);
@@ -358,7 +359,7 @@ function initCodex(root: HTMLElement) {
 
     const text = (sel: string, value: string) => root.querySelectorAll(sel).forEach((el) => (el.textContent = value));
     text('[data-hud-rank-name]', p.rank.name);
-    text('[data-hud-rank-en]', p.rank.english);
+    text('[data-hud-rank-en]', p.rank.gloss[document.documentElement.lang === 'el' ? 'el' : 'en']);
     text('[data-hud-studied]', String(p.studied));
     text('[data-hud-total]', String(p.total));
     text('[data-hud-seals]', `${state.seals.length}/${seals.length}`);
@@ -369,7 +370,8 @@ function initCodex(root: HTMLElement) {
   document.addEventListener('codex:change', () => renderProgress(false), on);
 
   root.querySelector('[data-reset]')?.addEventListener('click', () => {
-    if (!confirm('Burn the notebook? Your rank, seals and studied folios will be forgotten.')) return;
+    const button = root.querySelector<HTMLElement>('[data-reset]')!;
+    if (!confirm(button.dataset.confirm)) return;
     session.set(INKED_KEY, []);
     reset();
   }, on);

@@ -1,25 +1,47 @@
+import type { Lang } from '../i18n';
+
+type L = Record<Lang, string>;
+
 export const domains = {
-  anatomia: { name: 'Anatomia', english: 'Body & discipline', blurb: 'Where training and software meet.' },
-  commissioni: { name: 'Commissioni', english: 'Commissions', blurb: 'Freelance work for patrons, since 2020.' },
-  studi: { name: 'Studi', english: 'Studies', blurb: 'Tools for learning, and for language.' },
-  macchine: { name: 'Macchine', english: 'Machines', blurb: 'Small, sharp tools that do one job well.' },
-} as const;
+  anatomia: {
+    name: 'Anatomia',
+    gloss: { en: 'Body & discipline', el: 'Σώμα & πειθαρχία' },
+    blurb: { en: 'Where training and software meet.', el: 'Εκεί όπου η προπόνηση συναντά το λογισμικό.' },
+  },
+  commissioni: {
+    name: 'Commissioni',
+    gloss: { en: 'Commissions', el: 'Παραγγελίες' },
+    blurb: { en: 'Freelance work for patrons, since 2020.', el: 'Freelance δουλειά για πελάτες, από το 2020.' },
+  },
+  studi: {
+    name: 'Studi',
+    gloss: { en: 'Studies', el: 'Μελέτες' },
+    blurb: { en: 'Tools for learning, and for language.', el: 'Εργαλεία για τη μάθηση και για τη γλώσσα.' },
+  },
+  macchine: {
+    name: 'Macchine',
+    gloss: { en: 'Machines', el: 'Μηχανές' },
+    blurb: { en: 'Small, sharp tools that do one job well.', el: 'Μικρά, κοφτερά εργαλεία που κάνουν μία δουλειά καλά.' },
+  },
+} satisfies Record<string, { name: string; gloss: L; blurb: L }>;
 
 export type Domain = keyof typeof domains;
 
 export const statuses = {
-  live: 'Live',
-  alpha: 'In development',
-  shipped: 'Completed',
-  'non-finito': 'Non finito',
-} as const;
+  live: { en: 'Live', el: 'Σε λειτουργία' },
+  alpha: { en: 'In development', el: 'Σε ανάπτυξη' },
+  shipped: { en: 'Completed', el: 'Ολοκληρωμένο' },
+  'non-finito': { en: 'Non finito', el: 'Non finito' },
+} satisfies Record<string, L>;
+
+export type Status = keyof typeof statuses;
 
 /** Workshop ranks, as in Verrocchio's bottega. `at` is the share of folios studied. */
 export const ranks = [
-  { id: 'garzone', name: 'Garzone', english: 'Shop boy', at: 0 },
-  { id: 'apprendista', name: 'Apprendista', english: 'Apprentice', at: 0.25 },
-  { id: 'lavorante', name: 'Lavorante', english: 'Journeyman', at: 0.6 },
-  { id: 'maestro', name: 'Maestro', english: 'Master', at: 1 },
+  { id: 'garzone', name: 'Garzone', gloss: { en: 'Shop boy', el: 'Παραγιός' }, at: 0 },
+  { id: 'apprendista', name: 'Apprendista', gloss: { en: 'Apprentice', el: 'Μαθητευόμενος' }, at: 0.25 },
+  { id: 'lavorante', name: 'Lavorante', gloss: { en: 'Journeyman', el: 'Τεχνίτης' }, at: 0.6 },
+  { id: 'maestro', name: 'Maestro', gloss: { en: 'Master', el: 'Μάστορας' }, at: 1 },
 ] as const;
 
 export const rankFor = (studied: number, total: number) =>
@@ -33,15 +55,15 @@ export type SealRule =
   | { kind: 'event'; event: string };
 
 /** Wax seals the visitor can earn. */
-export const seals: { id: string; name: string; hint: string; glyph: string; rule: SealRule }[] = [
-  { id: 'primo', name: 'Primo sguardo', hint: 'Open your first folio.', glyph: 'I', rule: { kind: 'any' } },
-  { id: 'specchio', name: 'Lo specchio', hint: 'Read a note written in mirror script.', glyph: 'Я', rule: { kind: 'event', event: 'mirror' } },
-  { id: 'cartografo', name: 'Il cartografo', hint: 'Find your way with the map.', glyph: '✣', rule: { kind: 'event', event: 'map' } },
-  { id: 'mecenate', name: 'Il mecenate', hint: 'Study every commission.', glyph: 'C', rule: { kind: 'domain', domain: 'commissioni' } },
-  { id: 'studioso', name: 'Lo studioso', hint: 'Study every study.', glyph: 'S', rule: { kind: 'domain', domain: 'studi' } },
-  { id: 'ingegnere', name: "L'ingegnere", hint: 'Study every machine.', glyph: 'M', rule: { kind: 'domain', domain: 'macchine' } },
-  { id: 'capolavoro', name: 'Il capolavoro', hint: 'Find the masterpiece.', glyph: '★', rule: { kind: 'capolavoro' } },
-  { id: 'maestro', name: 'Maestro', hint: 'Study every folio in the codex.', glyph: 'Ω', rule: { kind: 'all' } },
+export const seals: { id: string; name: string; hint: L; glyph: string; rule: SealRule }[] = [
+  { id: 'primo', name: 'Primo sguardo', hint: { en: 'Open your first folio.', el: 'Ανοίξτε το πρώτο σας φύλλο.' }, glyph: 'I', rule: { kind: 'any' } },
+  { id: 'specchio', name: 'Lo specchio', hint: { en: 'Read a note written in mirror script.', el: 'Διαβάστε μια σημείωση σε κατοπτρική γραφή.' }, glyph: 'Я', rule: { kind: 'event', event: 'mirror' } },
+  { id: 'cartografo', name: 'Il cartografo', hint: { en: 'Find your way with the map.', el: 'Βρείτε τον δρόμο σας με τον χάρτη.' }, glyph: '✣', rule: { kind: 'event', event: 'map' } },
+  { id: 'mecenate', name: 'Il mecenate', hint: { en: 'Study every commission.', el: 'Μελετήστε όλες τις παραγγελίες.' }, glyph: 'C', rule: { kind: 'domain', domain: 'commissioni' } },
+  { id: 'studioso', name: 'Lo studioso', hint: { en: 'Study every study.', el: 'Μελετήστε όλες τις μελέτες.' }, glyph: 'S', rule: { kind: 'domain', domain: 'studi' } },
+  { id: 'ingegnere', name: "L'ingegnere", hint: { en: 'Study every machine.', el: 'Μελετήστε όλες τις μηχανές.' }, glyph: 'M', rule: { kind: 'domain', domain: 'macchine' } },
+  { id: 'capolavoro', name: 'Il capolavoro', hint: { en: 'Find the masterpiece.', el: 'Βρείτε το αριστούργημα.' }, glyph: '★', rule: { kind: 'capolavoro' } },
+  { id: 'maestro', name: 'Maestro', hint: { en: 'Study every folio in the codex.', el: 'Μελετήστε κάθε φύλλο του κώδικα.' }, glyph: 'Ω', rule: { kind: 'all' } },
 ];
 
 /** What the browser needs to evaluate progress; embedded on every page. */

@@ -1,49 +1,44 @@
 ---
 import { Image } from 'astro:assets';
-import Base from '../layouts/Base.astro';
-import portrait from '../assets/photos/profile.jpg';
-import { experience, languages, site, socials, url } from '../data/site';
+import Base from '../../layouts/Base.astro';
+import portrait from '../../assets/photos/profile.jpg';
+import { experience, languages, site, skills, socials } from '../../data/site';
+import { langFromParam, langParams, url, useT, type Lang } from '../../i18n';
 
-const skills = [
-  { name: 'Java', note: 'Object-oriented programming, application development' },
-  { name: 'JavaScript', note: 'Front-end development' },
-  { name: 'Responsive web & UI/UX', note: 'Mobile-first interfaces, clean UI' },
-  { name: 'System design', note: 'Fundamentals and application logic' },
-  { name: 'Debugging & performance', note: 'Finding the slow part, then fixing it' },
-  { name: 'Troubleshooting', note: 'Calm problem-solving, learnt on the support line' },
-];
+export const getStaticPaths = langParams;
+
+const lang = langFromParam(Astro.params.lang);
+const t = useT(lang);
+
+const bio: Record<Lang, string[]> = {
+  en: [
+    "I'm Alexander, a software developer in Athens. I'm studying for a BSc in Computer Science at Metropolitan College, after four years of Business Administration at the University of the Aegean in Chios. That detour taught me to think about the people and businesses behind the software.",
+    "I've freelanced since 2020, building custom, mobile-first websites for small businesses: talking to the client, shaping what they need, then designing and building it. Three years in customer support at Teleperformance taught me patience, and how to explain complex things simply.",
+    "Today I'm Digital Systems Partner at FlexPro Coaching, co-developing an online coaching platform, which sits neatly where my two passions meet. Outside of code, I train seriously and I'm learning Russian.",
+    "I admire Leonardo da Vinci more than anyone: his curiosity, his discipline, his refusal to stay in one lane. This site borrows his notebooks as its form. It's a reminder to keep studying.",
+  ],
+  el: [
+    'Είμαι ο Αλέξανδρος, προγραμματιστής στην Αθήνα. Σπουδάζω για BSc στην Πληροφορική στο Metropolitan College, μετά από τέσσερα χρόνια σπουδών στη Διοίκηση Επιχειρήσεων στο Πανεπιστήμιο Αιγαίου, στη Χίο. Αυτή η παράκαμψη μου έμαθε να σκέφτομαι τους ανθρώπους και τις επιχειρήσεις πίσω από το λογισμικό.',
+    'Από το 2020 δουλεύω ως freelancer, φτιάχνοντας ιστοσελίδες κατά παραγγελία, mobile-first, για μικρές επιχειρήσεις: μιλάω με τον πελάτη, διαμορφώνουμε μαζί τι χρειάζεται, και μετά το σχεδιάζω και το υλοποιώ. Τρία χρόνια στην εξυπηρέτηση πελατών στην Teleperformance μού έμαθαν υπομονή, και πώς να εξηγώ απλά τα σύνθετα πράγματα.',
+    'Σήμερα είμαι Digital Systems Partner στο FlexPro Coaching, όπου συν-αναπτύσσω μια πλατφόρμα online coaching, ακριβώς εκεί όπου συναντιούνται τα δύο μου πάθη. Έξω από τον κώδικα, προπονούμαι σοβαρά και μαθαίνω ρωσικά.',
+    'Θαυμάζω τον Λεονάρντο ντα Βίντσι περισσότερο από οποιονδήποτε: την περιέργειά του, την πειθαρχία του, την άρνησή του να μείνει σε ένα μόνο πεδίο. Αυτός ο ιστότοπος δανείζεται τη μορφή των σημειωματαρίων του. Είναι μια υπενθύμιση να συνεχίζω να μελετώ.',
+  ],
+};
 ---
 
-<Base title="About" description="About Alexander Maniateas: Computer Science student, freelance web developer and Digital Systems Partner at FlexPro Coaching, based in Athens.">
+<Base lang={lang} title={t('about.title')} description={t('about.description')}>
   <div class="page about">
     <section class="intro">
       <div class="intro-text">
-        <p class="label">About · Chi sono</p>
-        <h1>A developer who started in business, learnt on the phones, and never stopped studying.</h1>
+        <p class="label">{t('about.eyebrow')}</p>
+        <h1>{t('about.h1')}</h1>
         <div class="prose">
-          <p>
-            I'm Alexander, a software developer in Athens. I'm studying for a BSc in Computer Science at Metropolitan
-            College, after four years of Business Administration at the University of the Aegean in Chios. That detour
-            taught me to think about the people and businesses behind the software.
-          </p>
-          <p>
-            I've freelanced since 2020, building custom, mobile-first websites for small businesses: talking to the
-            client, shaping what they need, then designing and building it. Three years in customer support at
-            Teleperformance taught me patience, and how to explain complex things simply.
-          </p>
-          <p>
-            Today I'm Digital Systems Partner at FlexPro Coaching, co-developing an online coaching platform, which
-            sits neatly where my two passions meet. Outside of code, I train seriously and I'm learning Russian.
-          </p>
-          <p>
-            I admire Leonardo da Vinci more than anyone: his curiosity, his discipline, his refusal to stay in one
-            lane. This site borrows his notebooks as its form. It's a reminder to keep studying.
-          </p>
+          {bio[lang].map((para) => <p>{para}</p>)}
         </div>
       </div>
       <figure class="portrait">
-        <Image src={portrait} alt="Alexander Maniateas" widths={[400, 800]} sizes="(max-width: 900px) 80vw, 400px" />
-        <figcaption class="label">Ritratto · Athens</figcaption>
+        <Image src={portrait} alt={t('site.name')} widths={[400, 800]} sizes="(max-width: 900px) 80vw, 400px" />
+        <figcaption class="label">{t('about.caption')}</figcaption>
       </figure>
     </section>
 
@@ -51,10 +46,10 @@ const skills = [
 
     <section class="grid">
       <div>
-        <h2>Timeline</h2>
+        <h2>{t('about.timeline')}</h2>
         <ol class="timeline">
           {
-            experience.map((e) => (
+            experience[lang].map((e) => (
               <li>
                 <span class="label when">{e.when}</span>
                 <h3>{e.title}</h3>
@@ -68,10 +63,10 @@ const skills = [
 
       <div class="side">
         <section>
-          <h2>Craft</h2>
+          <h2>{t('about.craft')}</h2>
           <ul class="skills">
             {
-              skills.map((s, i) => (
+              skills[lang].map((s, i) => (
                 <li>
                   <span class="letter">{'ABCDEF'[i]}</span>
                   <span>
@@ -85,10 +80,10 @@ const skills = [
         </section>
 
         <section>
-          <h2>Languages</h2>
+          <h2>{t('about.languages')}</h2>
           <dl class="langs">
             {
-              languages.map((l) => (
+              languages[lang].map((l) => (
                 <div>
                   <dt>{l.name}</dt>
                   <dd class="label">{l.level}</dd>
@@ -99,8 +94,8 @@ const skills = [
         </section>
 
         <section class="contact">
-          <h2>Write to me</h2>
-          <p>Work, collaboration, or a good book on Leonardo, my inbox is open.</p>
+          <h2>{t('about.write')}</h2>
+          <p>{t('about.writeText')}</p>
           <a class="button primary" href={`mailto:${site.email}`}>{site.email}</a>
           {
             socials.length > 0 && (
@@ -113,7 +108,7 @@ const skills = [
               </p>
             )
           }
-          <a class="label see-codex" href={url('projects')}>Or explore the codex →</a>
+          <a class="label see-codex" href={url('projects', lang)}>{t('about.codex')}</a>
         </section>
       </div>
     </section>

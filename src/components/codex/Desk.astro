@@ -1,14 +1,16 @@
 ---
-import type { CollectionEntry } from 'astro:content';
 import Sketch from '../Sketch.astro';
 import { domains, seals } from '../../data/codex';
-import { url } from '../../data/site';
+import { url, useT, type Lang } from '../../i18n';
+import type { Project } from '../../i18n/content';
 
 interface Props {
-  projects: CollectionEntry<'projects'>[];
+  lang: Lang;
+  projects: Project[];
 }
 
-const { projects } = Astro.props;
+const { lang, projects } = Astro.props;
+const t = useT(lang);
 const W = 2600;
 const H = 1500;
 
@@ -59,8 +61,8 @@ const domainLabels = [
 ] as const;
 
 const notes = [
-  { x: 1300, y: 1010, it: 'La sapienza è figliola della sperienza.', en: 'Wisdom is the daughter of experience.' },
-  { x: 1880, y: 1010, it: 'Dimmi se mai fu fatta alcuna cosa.', en: 'Tell me if anything was ever finished.' },
+  { x: 1300, y: 1010, it: 'La sapienza è figliola della sperienza.', gloss: t('desk.note1') },
+  { x: 1880, y: 1010, it: 'Dimmi se mai fu fatta alcuna cosa.', gloss: t('desk.note2') },
 ];
 ---
 
@@ -69,7 +71,7 @@ const notes = [
     class="desk"
     data-desk
     tabindex="0"
-    aria-label="The codex desk. Drag or use the arrow keys to move, scroll or press plus and minus to zoom. Tab to move between folios."
+    aria-label={t('desk.aria')}
   >
     <div class="world" data-world data-w={W} data-h={H} style={`width:${W}px;height:${H}px`}>
       <svg class="ground" viewBox={`0 0 ${W} ${H}`} width={W} height={H} aria-hidden="true">
@@ -90,7 +92,7 @@ const notes = [
           <path d="M0 -84 L0 84 M-84 0 L84 0" class="thin" />
         </g>
         <text class="cartouche" x="1300" y="96" text-anchor="middle">Il Codice di Alessandro</text>
-        <text class="cartouche-sub" x="1300" y="132" text-anchor="middle">projects · studies · machines · MMXX –</text>
+        <text class="cartouche-sub" x="1300" y="132" text-anchor="middle">{t('desk.sub')}</text>
         {threads.map((t) => <path class="thread" d={t.d} data-a={t.a} data-b={t.b} />)}
       </svg>
 
@@ -98,7 +100,7 @@ const notes = [
         domainLabels.map((d) => (
           <div class="domain" style={`left:${d.x}px;top:${d.y}px`}>
             <span class="domain-name">{domains[d.key].name}</span>
-            <span class="label">{domains[d.key].english}</span>
+            <span class="label">{domains[d.key].gloss[lang]}</span>
           </div>
         ))
       }
@@ -110,7 +112,7 @@ const notes = [
           return (
             <a
               class:list={['node', { unfinished, capolavoro: p.data.capolavoro }]}
-              href={url(`projects/${p.id}`)}
+              href={url(`projects/${p.id}`, lang)}
               style={`left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px`}
               data-node={p.id}
               data-x={x}
@@ -130,7 +132,7 @@ const notes = [
                 <em class="italian">{p.data.motto}</em>
               </span>
               <span class="node-seal" aria-hidden="true" />
-              <span class="visually-hidden" data-node-state />
+              <span class="visually-hidden" data-node-state data-studied={t('desk.studied')} data-not-studied={t('desk.notStudied')} />
             </a>
           );
         })
@@ -139,7 +141,7 @@ const notes = [
         notes.map((n) => (
           <div class="desk-note" style={`left:${n.x}px;top:${n.y}px`}>
             <button class="mirror" type="button">{n.it}</button>
-            <span class="label">{n.en}</span>
+            <span class="label">{n.gloss}</span>
           </div>
         ))
       }
@@ -150,19 +152,19 @@ const notes = [
   <div class="hud hud-rank" data-hud-rank>
     <span class="wax small" aria-hidden="true">✦</span>
     <div>
-      <div class="rank-line"><strong data-hud-rank-name>Garzone</strong> <span class="label" data-hud-rank-en>Shop boy</span></div>
+      <div class="rank-line"><strong data-hud-rank-name>Garzone</strong> <span class="label" data-hud-rank-en></span></div>
       <div class="meter" aria-hidden="true"><span data-hud-meter></span></div>
-      <div class="label"><span data-hud-studied>0</span> of <span data-hud-total>0</span> folios studied</div>
+      <div class="label" set:html={t('desk.studiedOf', { studied: '<span data-hud-studied>0</span>', total: '<span data-hud-total>0</span>' })} />
     </div>
   </div>
 
   <div class="hud hud-tools">
-    <button type="button" class="tool" data-zoom="in" aria-label="Zoom in">+</button>
-    <button type="button" class="tool" data-zoom="out" aria-label="Zoom out">−</button>
-    <button type="button" class="tool" data-zoom="fit" aria-label="Show the whole desk">
+    <button type="button" class="tool" data-zoom="in" aria-label={t('desk.zoomIn')}>+</button>
+    <button type="button" class="tool" data-zoom="out" aria-label={t('desk.zoomOut')}>−</button>
+    <button type="button" class="tool" data-zoom="fit" aria-label={t('desk.fit')}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
     </button>
-    <button type="button" class="tool seals-button" popovertarget="seals-panel" aria-label="Seals earned">
+    <button type="button" class="tool seals-button" popovertarget="seals-panel" aria-label={t('desk.seals')}>
       <span class="wax tiny" aria-hidden="true"></span><span data-hud-seals>0/{seals.length}</span>
     </button>
   </div>
@@ -178,12 +180,12 @@ const notes = [
     </svg>
   </div>
 
-  <p class="hud hud-hint label" aria-hidden="true">Drag to explore · scroll to zoom · click a sketch to study it</p>
+  <p class="hud hud-hint label" aria-hidden="true">{t('desk.hint')}</p>
 
   <div id="seals-panel" class="seals-panel" popover>
     <div class="seals-head">
-      <h2>Seals of the workshop</h2>
-      <button type="button" class="tool" popovertarget="seals-panel" popovertargetaction="hide" aria-label="Close">×</button>
+      <h2>{t('desk.sealsTitle')}</h2>
+      <button type="button" class="tool" popovertarget="seals-panel" popovertargetaction="hide" aria-label={t('desk.close')}>×</button>
     </div>
     <ul>
       {
@@ -192,13 +194,13 @@ const notes = [
             <span class="wax" aria-hidden="true">{s.glyph}</span>
             <span>
               <strong>{s.name}</strong>
-              <small>{s.hint}</small>
+              <small>{s.hint[lang]}</small>
             </span>
           </li>
         ))
       }
     </ul>
-    <button type="button" class="reset label" data-reset>Burn the notebook (reset progress)</button>
+    <button type="button" class="reset label" data-reset data-confirm={t('desk.resetConfirm')}>{t('desk.reset')}</button>
   </div>
 </div>
 

@@ -1,65 +1,65 @@
 ---
-import { getCollection } from 'astro:content';
-import Base from '../layouts/Base.astro';
-import PortraitStudy from '../components/PortraitStudy.astro';
-import Sketch from '../components/Sketch.astro';
-import { seals, statuses } from '../data/codex';
-import { site, url } from '../data/site';
+import Base from '../../layouts/Base.astro';
+import PortraitStudy from '../../components/PortraitStudy.astro';
+import Sketch from '../../components/Sketch.astro';
+import { seals, statuses } from '../../data/codex';
+import { formatDate, langFromParam, langParams, url, useT } from '../../i18n';
+import { getArticles, getProjects } from '../../i18n/content';
 
-const projects = (await getCollection('projects')).sort((a, b) => a.data.folio - b.data.folio);
+export const getStaticPaths = langParams;
+
+const lang = langFromParam(Astro.params.lang);
+const t = useT(lang);
+const projects = await getProjects(lang);
 const bench = ['flexpro', 'college-compass', 'ocr-invoice-reader']
   .map((slug) => projects.find((p) => p.id === slug))
   .filter((p) => p !== undefined);
 const finished = projects.filter((p) => p.data.status !== 'non-finito').length;
 
-const articles = (await getCollection('articles')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-const fmt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+const articles = await getArticles(lang);
 ---
 
-<Base>
+<Base lang={lang}>
   <div class="page home">
     <!-- Hero -->
     <section class="hero">
       <div class="hero-text">
-        <p class="label">{site.role} · {site.city} · est. MMXX</p>
+        <p class="label">{t('home.eyebrow')}</p>
         <h1 class="display">
-          Alexander<br /><span class="surname">Maniateas</span>
+          {t('home.first')}<br /><span class="surname">{t('home.last')}</span>
         </h1>
-        <p class="lead">
-          I build web apps and small, sharp tools for people and businesses. I'm studying Computer Science at
-          Metropolitan College, I've freelanced since 2020, and when I'm not at the keyboard, I'm training.
-        </p>
+        <p class="lead">{t('home.lead')}</p>
         <div class="hero-actions">
-          <a class="button primary" href={url('projects')}>Open the codex →</a>
-          <a class="button" href={url('about')}>About me</a>
+          <a class="button primary" href={url('projects', lang)}>{t('home.cta')}</a>
+          <a class="button" href={url('about', lang)}>{t('home.about')}</a>
         </div>
         <p class="hero-note">
-          <button class="mirror" type="button">Studia prima la scienza, e poi seguita la pratica.</button>
-          <span class="label">First study the science, then follow the practice · Leonardo</span>
+          <button class="mirror" type="button" lang="it">Studia prima la scienza, e poi seguita la pratica.</button>
+          <span class="label">{t('home.quote')}</span>
         </p>
       </div>
       <div class="hero-art">
-        <PortraitStudy />
+        <PortraitStudy alt={t('portrait.alt')} />
       </div>
     </section>
 
     <!-- On the workbench -->
     <section class="bench" aria-labelledby="bench-title">
       <header class="section-head">
-        <h2 id="bench-title">On the workbench</h2>
-        <p class="label">What I'm building now</p>
+        <h2 id="bench-title">{t('home.bench')}</h2>
+        <p class="label">{t('home.benchSub')}</p>
       </header>
       <ul class="bench-list">
         {
           bench.map((p) => (
             <li>
-              <a class="bench-card" href={url(`projects/${p.id}`)}>
+              <a class="bench-card" href={url(`projects/${p.id}`, lang)}>
                 <div class="bench-art" transition:name={`sketch-${p.id}`}>
                   <Sketch name={p.data.sketch} state={p.data.status === 'non-finito' ? 'unfinished' : 'ink'} />
                 </div>
                 <div>
                   <span class="label">
-                    {statuses[p.data.status]}
+                    {statuses[p.data.status][lang]}
                     {p.data.capolavoro && <> · capolavoro</>}
                   </span>
                   <h3>{p.data.title}</h3>
@@ -84,28 +84,25 @@ const fmt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', ye
       </div>
       <div class="invite-text">
         <p class="label">Il Codice</p>
-        <h2>Every project is a folio. Study them all and become <em>Maestro</em>.</h2>
-        <p>
-          My portfolio is a notebook you explore: drag across the desk, open each drawing, earn the workshop's seals.{' '}
-          {finished} works finished, {projects.length - finished} still on the bench, {seals.length} seals to earn.
-        </p>
-        <a class="button primary" href={url('projects')}>Enter the codex →</a>
+        <h2 set:html={t('home.inviteTitle')} />
+        <p>{t('home.inviteText', { finished, wip: projects.length - finished, seals: seals.length })}</p>
+        <a class="button primary" href={url('projects', lang)}>{t('home.inviteCta')}</a>
       </div>
     </section>
 
     <!-- Writing -->
     <section class="writing" aria-labelledby="writing-title">
       <header class="section-head">
-        <h2 id="writing-title">From the notebook</h2>
-        <a class="label" href={url('articles')}>All articles →</a>
+        <h2 id="writing-title">{t('home.writing')}</h2>
+        <a class="label" href={url('articles', lang)}>{t('home.allArticles')}</a>
       </header>
       <ol class="entries">
         {
           articles.map((a) => (
             <li>
-              <a href={url(`articles/${a.id}`)}>
+              <a href={url(`articles/${a.id}`, lang)} lang={a.translated ? undefined : 'en'}>
                 <time class="label" datetime={a.data.date.toISOString()}>
-                  {fmt.format(a.data.date)}
+                  {formatDate(a.data.date, lang)}
                 </time>
                 <h3>{a.data.title}</h3>
                 <p>{a.data.summary}</p>
@@ -266,7 +263,7 @@ const fmt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', ye
   .invite-text h2 {
     font-size: clamp(2rem, 4vw, 3.2rem);
   }
-  .invite-text h2 em {
+  .invite-text h2 :global(em) {
     color: var(--sanguine);
     font-weight: 500;
   }

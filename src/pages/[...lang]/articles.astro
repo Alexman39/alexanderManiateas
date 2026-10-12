@@ -1,32 +1,35 @@
 ---
-import { getCollection } from 'astro:content';
-import Base from '../layouts/Base.astro';
-import { url } from '../data/site';
+import Base from '../../layouts/Base.astro';
+import { formatDate, langFromParam, langParams, url, useT } from '../../i18n';
+import { getArticles } from '../../i18n/content';
 
-const articles = (await getCollection('articles')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-const fmt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+export const getStaticPaths = langParams;
+
+const lang = langFromParam(Astro.params.lang);
+const t = useT(lang);
+const articles = await getArticles(lang);
 ---
 
-<Base title="Articles" description="Writing by Alexander Maniateas on software development, student life and the road from customer support to code.">
+<Base lang={lang} title={t('articles.title')} description={t('articles.description')}>
   <div class="page">
     <header class="head">
-      <p class="label">Quaderno · Notebook</p>
-      <h1>Writing on software, study, and the long road into tech.</h1>
-      <p class="lead">Longer thoughts on coding, education, freelancing and personal growth, newest first.</p>
+      <p class="label">{t('articles.eyebrow')}</p>
+      <h1>{t('articles.h1')}</h1>
+      <p class="lead">{t('articles.lead')}</p>
     </header>
 
     <ol class="entries">
       {
         articles.map((a, i) => (
           <li>
-            <a href={url(`articles/${a.id}`)}>
+            <a href={url(`articles/${a.id}`, lang)} lang={a.translated ? undefined : 'en'}>
               <span class="num" aria-hidden="true">{String(articles.length - i).padStart(2, '0')}</span>
               <time class="label" datetime={a.data.date.toISOString()}>
-                {fmt.format(a.data.date)}
+                {formatDate(a.data.date, lang)}
               </time>
               <h2>{a.data.title}</h2>
               <p>{a.data.summary}</p>
-              <span class="label read">Read →</span>
+              <span class="label read">{t('articles.read')}</span>
             </a>
           </li>
         ))

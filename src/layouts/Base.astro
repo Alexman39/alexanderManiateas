@@ -1,38 +1,54 @@
 ---
 import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
-import { getCollection } from 'astro:content';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { site, url } from '../data/site';
+import { langNames, langs, splitPath, url, useT, type Lang } from '../i18n';
+import { getProjects } from '../i18n/content';
 import type { CodexMeta } from '../data/codex';
 
 interface Props {
+  lang: Lang;
   title?: string;
   description?: string;
 }
 
-const { title, description = site.description } = Astro.props;
-const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · ${site.role}`;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+const { lang, title, description } = Astro.props;
+const t = useT(lang);
+const name = t('site.name');
+const fullTitle = title ? `${title} · ${name}` : `${name} · ${t('site.role')}`;
+const desc = description ?? t('site.description');
 
-const meta: CodexMeta = (await getCollection('projects'))
-  .sort((a, b) => a.data.folio - b.data.folio)
-  .map((p) => ({ slug: p.id, title: p.data.title, domain: p.data.domain, capolavoro: p.data.capolavoro }));
+// The same page in every language, for the switch and for search engines.
+const { rest } = splitPath(Astro.url.pathname);
+const alternates = langs.map((l) => ({ lang: l, href: new URL(url(rest, l), Astro.site).href }));
+const canonical = alternates.find((a) => a.lang === lang)!.href;
+const other = langs.find((l) => l !== lang)!;
+
+const meta: CodexMeta = (await getProjects(lang)).map((p) => ({
+  slug: p.id,
+  title: p.data.title,
+  domain: p.data.domain,
+  capolavoro: p.data.capolavoro,
+}));
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
-    <meta name="description" content={description} />
+    <meta name="description" content={desc} />
     <link rel="canonical" href={canonical} />
+    {alternates.map((a) => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
+    <link rel="alternate" hreflang="x-default" href={alternates[0].href} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={fullTitle} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={desc} />
     <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={langNames[lang].locale.replace('-', '_')} />
+    <meta property="og:locale:alternate" content={langNames[other].locale.replace('-', '_')} />
     <meta name="theme-color" content="#efe4cb" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#18120c" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href={url('favicon/favicon-32x32.png')} sizes="32x32" type="image/png" />
@@ -57,7 +73,7 @@ const meta: CodexMeta = (await getCollection('projects'))
     <ClientRouter />
   </head>
   <body>
-    <a class="skip" href="#main">Skip to content</a>
+    <a class="skip" href="#main">{t('nav.skip')}</a>
 
     <svg width="0" height="0" aria-hidden="true" style="position:absolute">
       <filter id="ink-wobble" x="-5%" y="-5%" width="110%" height="110%">
@@ -66,11 +82,11 @@ const meta: CodexMeta = (await getCollection('projects'))
       </filter>
     </svg>
 
-    <Header />
+    <Header lang={lang} altHref={url(rest, other)} />
     <main id="main">
       <slot />
     </main>
-    <Footer />
+    <Footer lang={lang} />
 
     <div class="toasts" id="toasts" role="status" aria-live="polite" transition:persist></div>
     <script id="codex-meta" type="application/json" set:html={JSON.stringify(meta)} />

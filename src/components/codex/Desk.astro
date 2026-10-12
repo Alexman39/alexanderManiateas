@@ -1,0 +1,635 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Sketch from '../Sketch.astro';
+import { domains, seals } from '../../data/codex';
+import { url } from '../../data/site';
+
+interface Props {
+  projects: CollectionEntry<'projects'>[];
+}
+
+const { projects } = Astro.props;
+const W = 2600;
+const H = 1500;
+
+const bySlug = new Map(projects.map((p) => [p.id, p]));
+
+// Related folios are joined by a sanguine thread, bowed slightly like a hand-drawn line.
+const threads = projects.flatMap((p) =>
+  p.data.related
+    .filter((r) => bySlug.has(r) && p.id < r)
+    .map((r) => {
+      const a = p.data.desk;
+      const b = bySlug.get(r)!.data.desk;
+      const mx = (a.x + b.x) / 2;
+      const my = (a.y + b.y) / 2;
+      const nx = -(b.y - a.y) * 0.14;
+      const ny = (b.x - a.x) * 0.14;
+      return { a: p.id, b: r, d: `M${a.x} ${a.y} Q${mx + nx} ${my + ny} ${b.x} ${b.y}` };
+    }),
+);
+
+// Golden rectangles and their spiral, drawn as construction in the lower margin.
+const golden = (() => {
+  const phi = (1 + Math.sqrt(5)) / 2;
+  let x = 1010;
+  let y = 1090;
+  let w = 580;
+  let h = w / phi;
+  let rects = '';
+  let arcs = `M${x} ${y + h}`;
+  for (let i = 0; i < 7; i++) {
+    rects += `M${x} ${y}h${w}v${h}h${-w}Z`;
+    const s = Math.min(w, h);
+    switch (i % 4) {
+      case 0: arcs += `A${s} ${s} 0 0 1 ${x + s} ${y}`; x += s; w -= s; break;
+      case 1: arcs += `A${s} ${s} 0 0 1 ${x + w} ${y + s}`; y += s; h -= s; break;
+      case 2: arcs += `A${s} ${s} 0 0 1 ${x + w - s} ${y + h}`; w -= s; break;
+      case 3: arcs += `A${s} ${s} 0 0 1 ${x} ${y + h - s}`; h -= s; break;
+    }
+  }
+  return { rects, arcs };
+})();
+
+const domainLabels = [
+  { key: 'commissioni', x: 440, y: 140 },
+  { key: 'anatomia', x: 1300, y: 395 },
+  { key: 'studi', x: 450, y: 915 },
+  { key: 'macchine', x: 2130, y: 140 },
+] as const;
+
+const notes = [
+  { x: 1300, y: 1010, it: 'La sapienza è figliola della sperienza.', en: 'Wisdom is the daughter of experience.' },
+  { x: 1880, y: 1010, it: 'Dimmi se mai fu fatta alcuna cosa.', en: 'Tell me if anything was ever finished.' },
+];
+---
+
+<div class="desk-wrap" data-desk-wrap>
+  <div
+    class="desk"
+    data-desk
+    tabindex="0"
+    aria-label="The codex desk. Drag or use the arrow keys to move, scroll or press plus and minus to zoom. Tab to move between folios."
+  >
+    <div class="world" data-world data-w={W} data-h={H} style={`width:${W}px;height:${H}px`}>
+      <svg class="ground" viewBox={`0 0 ${W} ${H}`} width={W} height={H} aria-hidden="true">
+        <g class="construction">
+          <circle cx="1300" cy="690" r="340" />
+          <rect x="1030" y="420" width="540" height="540" />
+          <path d="M1030 420 L1570 960 M1570 420 L1030 960" />
+          <circle cx="440" cy="480" r="390" />
+          <circle cx="450" cy="1190" r="350" />
+          <circle cx="2130" cy="700" r="540" />
+          <path d={golden.rects} />
+        </g>
+        <path class="spiral" d={golden.arcs} />
+        <g class="rose" transform="translate(1300 245)">
+          <circle r="62" />
+          <circle r="54" class="thin" />
+          <path d="M0 -84 L9 -9 L84 0 L9 9 L0 84 L-9 9 L-84 0 L-9 -9 Z" />
+          <path d="M0 -84 L0 84 M-84 0 L84 0" class="thin" />
+        </g>
+        <text class="cartouche" x="1300" y="96" text-anchor="middle">Il Codice di Alessandro</text>
+        <text class="cartouche-sub" x="1300" y="132" text-anchor="middle">projects · studies · machines · MMXX –</text>
+        {threads.map((t) => <path class="thread" d={t.d} data-a={t.a} data-b={t.b} />)}
+      </svg>
+
+      {
+        domainLabels.map((d) => (
+          <div class="domain" style={`left:${d.x}px;top:${d.y}px`}>
+            <span class="domain-name">{domains[d.key].name}</span>
+            <span class="label">{domains[d.key].english}</span>
+          </div>
+        ))
+      }
+
+      {
+        projects.map((p) => {
+          const { x, y, size } = p.data.desk;
+          const unfinished = p.data.status === 'non-finito';
+          return (
+            <a
+              class:list={['node', { unfinished, capolavoro: p.data.capolavoro }]}
+              href={url(`projects/${p.id}`)}
+              style={`left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px`}
+              data-node={p.id}
+              data-x={x}
+              data-y={y}
+              data-size={size}
+            >
+              <div class="node-art" transition:name={`sketch-${p.id}`}>
+                <Sketch name={p.data.sketch} state={unfinished ? 'unfinished' : 'pencil'} />
+              </div>
+              <span class="node-caption">
+                <span class="label">
+                  f. {p.data.folio}
+                  {unfinished && <> · non finito</>}
+                  {p.data.capolavoro && <> · capolavoro</>}
+                </span>
+                <strong>{p.data.title}</strong>
+                <em class="italian">{p.data.motto}</em>
+              </span>
+              <span class="node-seal" aria-hidden="true" />
+              <span class="visually-hidden" data-node-state />
+            </a>
+          );
+        })
+      }
+      {
+        notes.map((n) => (
+          <div class="desk-note" style={`left:${n.x}px;top:${n.y}px`}>
+            <button class="mirror" type="button">{n.it}</button>
+            <span class="label">{n.en}</span>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <!-- HUD -->
+  <div class="hud hud-rank" data-hud-rank>
+    <span class="wax small" aria-hidden="true">✦</span>
+    <div>
+      <div class="rank-line"><strong data-hud-rank-name>Garzone</strong> <span class="label" data-hud-rank-en>Shop boy</span></div>
+      <div class="meter" aria-hidden="true"><span data-hud-meter></span></div>
+      <div class="label"><span data-hud-studied>0</span> of <span data-hud-total>0</span> folios studied</div>
+    </div>
+  </div>
+
+  <div class="hud hud-tools">
+    <button type="button" class="tool" data-zoom="in" aria-label="Zoom in">+</button>
+    <button type="button" class="tool" data-zoom="out" aria-label="Zoom out">−</button>
+    <button type="button" class="tool" data-zoom="fit" aria-label="Show the whole desk">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+    </button>
+    <button type="button" class="tool seals-button" popovertarget="seals-panel" aria-label="Seals earned">
+      <span class="wax tiny" aria-hidden="true"></span><span data-hud-seals>0/{seals.length}</span>
+    </button>
+  </div>
+
+  <div class="hud hud-map" data-minimap aria-hidden="true">
+    <svg viewBox={`0 0 ${W} ${H}`}>
+      {
+        projects.map((p) => (
+          <circle cx={p.data.desk.x} cy={p.data.desk.y} r={p.data.desk.size / 3.2} data-map-node={p.id} />
+        ))
+      }
+      <rect class="viewport" data-map-view x="0" y="0" width={W} height={H} />
+    </svg>
+  </div>
+
+  <p class="hud hud-hint label" aria-hidden="true">Drag to explore · scroll to zoom · click a sketch to study it</p>
+
+  <div id="seals-panel" class="seals-panel" popover>
+    <div class="seals-head">
+      <h2>Seals of the workshop</h2>
+      <button type="button" class="tool" popovertarget="seals-panel" popovertargetaction="hide" aria-label="Close">×</button>
+    </div>
+    <ul>
+      {
+        seals.map((s) => (
+          <li data-seal={s.id}>
+            <span class="wax" aria-hidden="true">{s.glyph}</span>
+            <span>
+              <strong>{s.name}</strong>
+              <small>{s.hint}</small>
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+    <button type="button" class="reset label" data-reset>Burn the notebook (reset progress)</button>
+  </div>
+</div>
+
+<style>
+  .desk-wrap {
+    position: relative;
+    height: clamp(460px, calc(100dvh - 260px), 1100px);
+    border: 1px solid var(--paper-edge);
+    border-radius: 18px;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% 45%, color-mix(in srgb, var(--paper) 70%, #fff 8%), transparent 70%),
+      var(--paper-deep);
+    box-shadow: inset 0 0 120px -30px var(--vignette), var(--shadow);
+  }
+
+  .desk {
+    position: absolute;
+    inset: 0;
+    overflow: clip;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .desk:focus-visible {
+    outline-offset: -4px;
+  }
+  .desk.is-dragging {
+    cursor: grabbing;
+  }
+  .desk.is-dragging .node {
+    pointer-events: none;
+  }
+
+  .world {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+
+  .ground {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+    fill: none;
+  }
+  .construction {
+    stroke: var(--sanguine);
+    stroke-width: 1.2;
+    stroke-dasharray: 4 9;
+    opacity: 0.28;
+  }
+  .spiral {
+    stroke: var(--sanguine);
+    stroke-width: 1.6;
+    opacity: 0.5;
+  }
+  .rose {
+    stroke: var(--ink-3);
+    stroke-width: 1.4;
+  }
+  .rose .thin {
+    stroke-width: 0.7;
+    stroke-dasharray: 3 5;
+  }
+  .cartouche {
+    fill: var(--ink);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 64px;
+  }
+  .cartouche-sub {
+    fill: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+  .thread {
+    stroke: var(--sanguine);
+    stroke-width: 2;
+    stroke-dasharray: 2 10;
+    stroke-linecap: round;
+    opacity: 0.35;
+    transition: opacity 0.6s, stroke-width 0.6s;
+  }
+  .thread.lit {
+    stroke-dasharray: none;
+    opacity: 0.6;
+  }
+  .thread.hot {
+    opacity: 1;
+    stroke-width: 3;
+  }
+
+  .domain {
+    position: absolute;
+    translate: -50% -50%;
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    pointer-events: none;
+  }
+  .domain-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: calc(var(--domain-size, 56px));
+    line-height: 1;
+    color: var(--ink);
+  }
+  .domain .label {
+    font-size: calc(var(--domain-size, 56px) * 0.24);
+    color: var(--sanguine);
+  }
+
+  .desk-note {
+    position: absolute;
+    width: 360px;
+    translate: -50% 0;
+    display: grid;
+    gap: 6px;
+    text-align: center;
+  }
+  .desk-note .mirror {
+    font-size: 30px;
+  }
+  .desk-note .label {
+    font-size: 12px;
+  }
+
+  .node {
+    position: absolute;
+    display: block;
+    text-decoration: none;
+    color: var(--ink);
+    -webkit-user-drag: none;
+  }
+  .node-art {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    transition: transform 0.6s var(--ease), filter 0.6s;
+  }
+  .node-art :global(.sketch) {
+    width: 100%;
+    height: 100%;
+  }
+  .node:hover .node-art,
+  .node:focus-visible .node-art {
+    transform: scale(1.06) rotate(-1.5deg);
+    filter: drop-shadow(0 12px 18px rgb(80 50 20 / 0.18));
+  }
+  .node:focus-visible {
+    outline: none;
+  }
+  .node:focus-visible .node-caption strong {
+    text-decoration: underline 2px var(--sanguine);
+    text-underline-offset: 4px;
+  }
+  .node-caption {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 50%;
+    translate: -50% 0;
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    font-size: calc(16px * var(--cap, 1));
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .node-caption strong {
+    font-family: var(--font-display);
+    font-size: 1.55em;
+    font-weight: 600;
+  }
+  .node-caption .italian {
+    font-size: 1.05em;
+  }
+  .node-caption .label {
+    font-size: 0.68em;
+  }
+  .world[data-lod='far'] .node-caption .label,
+  .world[data-lod='far'] .node-caption .italian {
+    display: none;
+  }
+  .node.capolavoro .node-caption strong {
+    color: var(--sanguine);
+  }
+
+  .node-seal {
+    position: absolute;
+    top: 6%;
+    right: 6%;
+    width: 22%;
+    aspect-ratio: 1;
+    border-radius: 47% 53% 50% 48% / 52% 46% 54% 48%;
+    background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--seal) 70%, #fff 25%), var(--seal) 58%, color-mix(in srgb, var(--seal) 70%, #000 30%));
+    box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--seal) 75%, #000 15%);
+    transform: scale(0) rotate(-40deg);
+    transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s;
+  }
+  .node.is-studied .node-seal {
+    transform: scale(1) rotate(-12deg);
+  }
+
+  /* ------------------------------------------------------------- HUD */
+
+  .hud {
+    position: absolute;
+    z-index: 2;
+  }
+  .hud-rank,
+  .hud-tools,
+  .hud-map {
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid var(--paper-edge);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+  }
+
+  .hud-rank {
+    left: 14px;
+    top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px 10px 10px;
+  }
+  .rank-line strong {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+  }
+  .meter {
+    width: 170px;
+    height: 4px;
+    margin: 4px 0 5px;
+    border-radius: 4px;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .meter span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--sanguine);
+    transition: width 1s var(--ease);
+  }
+  .hud-rank .label {
+    font-size: 0.62rem;
+  }
+
+  .wax.small {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  .wax.tiny {
+    width: 16px;
+    height: 16px;
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--seal) 75%, #000 15%);
+  }
+
+  .hud-tools {
+    right: 14px;
+    top: 14px;
+    display: flex;
+    gap: 4px;
+    padding: 5px;
+  }
+  .tool {
+    display: inline-grid;
+    place-items: center;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+  .tool:hover {
+    background: var(--sanguine-wash);
+  }
+  .tool svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+  .seals-button {
+    display: inline-flex;
+    gap: 8px;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+  }
+
+  .hud-map {
+    left: 14px;
+    bottom: 14px;
+    width: 180px;
+    padding: 8px;
+    cursor: crosshair;
+    touch-action: none;
+  }
+  .hud-map svg {
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    background: var(--paper-deep);
+  }
+  .hud-map circle {
+    fill: var(--pencil);
+    opacity: 0.6;
+  }
+  .hud-map circle.studied {
+    fill: var(--sanguine);
+    opacity: 1;
+  }
+  .hud-map .viewport {
+    fill: var(--sanguine-wash);
+    stroke: var(--sanguine);
+    stroke-width: 18;
+  }
+
+  .hud-hint {
+    right: 18px;
+    bottom: 12px;
+    margin: 0;
+    font-size: 0.62rem;
+    pointer-events: none;
+    transition: opacity 0.6s;
+  }
+  .desk-wrap.has-moved .hud-hint {
+    opacity: 0;
+  }
+
+  .seals-panel {
+    width: min(420px, calc(100% - 32px));
+    max-height: min(640px, calc(100dvh - 120px));
+    margin: auto;
+    padding: 20px;
+    border: 1px solid var(--paper-edge);
+    border-radius: 18px;
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: var(--shadow);
+  }
+  .seals-panel::backdrop {
+    background: rgb(30 20 10 / 0.35);
+    backdrop-filter: blur(2px);
+  }
+  .seals-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .seals-head h2 {
+    font-size: 1.8rem;
+  }
+  .seals-panel ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .seals-panel li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .seals-panel li strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    line-height: 1.1;
+  }
+  .seals-panel li small {
+    color: var(--ink-2);
+  }
+  .seals-panel li:not(.earned) .wax {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--pencil);
+    color: transparent;
+    border-style: dashed;
+  }
+  .seals-panel li:not(.earned) strong {
+    color: var(--ink-3);
+  }
+  .reset {
+    margin-top: 18px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .reset:hover {
+    color: var(--sanguine);
+  }
+
+  @media (max-width: 760px) {
+    .hud-map,
+    .hud-hint {
+      display: none;
+    }
+    .hud-rank {
+      left: 8px;
+      top: 8px;
+      right: auto;
+    }
+    .meter {
+      width: 110px;
+    }
+    .hud-tools {
+      right: 8px;
+      top: auto;
+      bottom: 8px;
+    }
+  }
+</style>

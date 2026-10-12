@@ -1,0 +1,522 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import Sketch from '../../components/Sketch.astro';
+import { domains, statuses } from '../../data/codex';
+import { url } from '../../data/site';
+
+export const getStaticPaths = (async () => {
+  const projects = (await getCollection('projects')).sort((a, b) => a.data.folio - b.data.folio);
+  return projects.map((project, i) => ({
+    params: { slug: project.id },
+    props: {
+      project,
+      prev: projects[(i - 1 + projects.length) % projects.length],
+      next: projects[(i + 1) % projects.length],
+    },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  prev: CollectionEntry<'projects'>;
+  next: CollectionEntry<'projects'>;
+}
+
+const { project, prev, next } = Astro.props;
+const p = project.data;
+const { Content } = await render(project);
+const unfinished = p.status === 'non-finito';
+const domain = domains[p.domain];
+const letters = 'ABCDEFGHIJ';
+---
+
+<Base title={p.title} description={p.summary}>
+  <article class="folio" data-folio={project.id}>
+    <nav class="crumbs label" aria-label="Breadcrumb">
+      <a href={url('projects')}>← Il Codice</a>
+      <span aria-hidden="true">/</span>
+      <span>{domain.name}</span>
+      <span aria-hidden="true">/</span>
+      <span>f. {p.folio}r</span>
+    </nav>
+
+    <div class="spread">
+      <!-- Verso: the drawing -->
+      <figure class="page verso">
+        <div class="plate" transition:name={`sketch-${project.id}`}>
+          <Sketch name={p.sketch} state={unfinished ? 'unfinished' : 'ink'} label={`Ink sketch for ${p.title}`} class="plate-sketch" />
+        </div>
+        <figcaption>
+          <button class="mirror" type="button">{p.note}</button>
+          <span class="label">Margin note · hover or tap to read</span>
+        </figcaption>
+        <span class="folio-number" aria-hidden="true">{p.folio}v</span>
+      </figure>
+
+      <!-- Recto: the account -->
+      <div class="page recto">
+        <p class="label domain">{domain.name} · {domain.english}</p>
+        <h1>{p.title}</h1>
+        <p class="motto italian">{p.motto}</p>
+
+        <div class="seals-row">
+          <span class:list={['status', `status-${p.status}`]}>{statuses[p.status]}</span>
+          {p.capolavoro && <span class="status status-capolavoro">Capolavoro</span>}
+          <span class="studied-stamp" data-studied-stamp hidden>Studied</span>
+        </div>
+
+        <p class="summary">{p.summary}</p>
+
+        <dl class="facts">
+          <div>
+            <dt class="label">Role</dt>
+            <dd>{p.role}</dd>
+          </div>
+          {
+            p.years && (
+              <div>
+                <dt class="label">Years</dt>
+                <dd>{p.years}</dd>
+              </div>
+            )
+          }
+          {
+            p.size && (
+              <div>
+                <dt class="label">Scale</dt>
+                <dd>{p.size[0].toUpperCase() + p.size.slice(1)}</dd>
+              </div>
+            )
+          }
+        </dl>
+
+        {
+          p.stack.length > 0 && (
+            <section class="components" aria-labelledby="components-title">
+              <h2 id="components-title" class="label">Componenti · Stack</h2>
+              <ol>
+                {p.stack.map((s, i) => (
+                  <li>
+                    <span class="letter">{letters[i]}</span>
+                    {s}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )
+        }
+
+        {
+          (p.links.live || p.links.repo) && (
+            <div class="actions">
+              {p.links.live && (
+                <a class="button primary" href={p.links.live} target="_blank" rel="noopener">
+                  Visit the site ↗
+                </a>
+              )}
+              {p.links.repo && (
+                <a class="button" href={p.links.repo} target="_blank" rel="noopener">
+                  Source ↗
+                </a>
+              )}
+            </div>
+          )
+        }
+
+        {
+          p.logo && (
+            <div class="patron">
+              <Image src={p.logo} alt={`${p.title} logo`} width={72} height={72} />
+              <span class="label">Mark of the work</span>
+            </div>
+          )
+        }
+      </div>
+    </div>
+
+    <div class="account">
+      <div class="prose">
+        <Content />
+      </div>
+
+      {
+        p.plan.length > 0 && (
+          <aside class:list={['plan', { unfinished }]}>
+            <h2>{unfinished ? 'Piano di lavoro' : 'Next on the bench'}</h2>
+            <p class="label">{unfinished ? 'Workshop plan · not yet built' : 'What comes next'}</p>
+            <ul>
+              {p.plan.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+            {unfinished && (
+              <p class="quote">
+                <span class="italian">“Dimmi se mai fu fatta alcuna cosa.”</span>
+                <span class="label">Tell me if anything was ever finished · Leonardo</span>
+              </p>
+            )}
+          </aside>
+        )
+      }
+    </div>
+
+    <nav class="turn" aria-label="Turn the page">
+      <a href={url(`projects/${prev.id}`)} class="turn-prev">
+        <span class="label">← f. {prev.data.folio}</span>
+        <strong>{prev.data.title}</strong>
+      </a>
+      <a href={url('projects')} class="turn-desk label">Back to the codex</a>
+      <a href={url(`projects/${next.id}`)} class="turn-next">
+        <span class="label">f. {next.data.folio} →</span>
+        <strong>{next.data.title}</strong>
+      </a>
+    </nav>
+  </article>
+</Base>
+
+<script>
+  import { load, visit } from '../../scripts/codex';
+  import { drawIn } from '../../scripts/ink';
+
+  document.addEventListener('astro:page-load', () => {
+    const folio = document.querySelector<HTMLElement>('[data-folio]');
+    if (!folio) return;
+    const first = visit(folio.dataset.folio!);
+    if (first) drawIn(folio.querySelector<SVGSVGElement>('.plate-sketch'), 250, 30);
+    const stamp = folio.querySelector<HTMLElement>('[data-studied-stamp]')!;
+    stamp.hidden = !load().visited.includes(folio.dataset.folio!);
+    stamp.classList.toggle('fresh', first);
+  });
+</script>
+
+<style>
+  .folio {
+    width: min(1240px, 100% - 2 * var(--gutter));
+    margin-inline: auto;
+    padding-top: calc(var(--header-h) + 28px);
+    padding-bottom: 96px;
+  }
+  .crumbs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .crumbs a {
+    text-decoration: none;
+    color: var(--sanguine);
+  }
+
+  /* An open notebook: two pages and a gutter shadow between them. */
+  .spread {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--card);
+    border: 1px solid var(--paper-edge);
+    border-radius: 6px 6px 6px 6px;
+    box-shadow: var(--shadow);
+  }
+  .spread::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 60px;
+    translate: -50% 0;
+    background: linear-gradient(to right, transparent, rgb(90 60 25 / 0.12) 48%, rgb(90 60 25 / 0.2) 50%, rgb(90 60 25 / 0.12) 52%, transparent);
+    pointer-events: none;
+  }
+  .page {
+    position: relative;
+    margin: 0;
+    padding: clamp(24px, 4vw, 56px);
+  }
+
+  .verso {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 24px;
+  }
+  .plate {
+    width: min(100%, 440px);
+    aspect-ratio: 1;
+  }
+  .plate :global(.sketch) {
+    width: 100%;
+    height: 100%;
+  }
+  .verso figcaption {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    text-align: center;
+    max-width: 34ch;
+  }
+  .verso .mirror {
+    font-size: 1.5rem;
+  }
+  .folio-number {
+    position: absolute;
+    left: 20px;
+    bottom: 14px;
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--ink-3);
+  }
+
+  .recto {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .domain {
+    color: var(--sanguine);
+  }
+  .recto h1 {
+    font-size: clamp(2.6rem, 5.4vw, 4.6rem);
+  }
+  .motto {
+    font-size: 1.6rem;
+    margin-top: -6px;
+  }
+  .seals-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .status,
+  .studied-stamp {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .status-live {
+    color: var(--verdigris);
+  }
+  .status-alpha {
+    color: var(--ochre);
+  }
+  .status-shipped {
+    color: var(--ink-2);
+  }
+  .status-non-finito {
+    color: var(--ink-3);
+    border-style: dashed;
+  }
+  .status-capolavoro {
+    color: var(--sanguine);
+  }
+  .studied-stamp {
+    color: var(--seal);
+    border-width: 2px;
+    font-weight: 500;
+    transform: rotate(-4deg);
+  }
+  .studied-stamp.fresh {
+    animation: stamp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.8s both;
+  }
+  @keyframes stamp {
+    from {
+      opacity: 0;
+      transform: scale(2.2) rotate(-14deg);
+    }
+  }
+
+  .summary {
+    font-size: 1.15rem;
+    color: var(--ink-2);
+    line-height: 1.6;
+  }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 40px;
+    margin: 6px 0 0;
+  }
+  .facts dd {
+    margin: 2px 0 0;
+    font-weight: 600;
+  }
+
+  .components h2 {
+    margin-bottom: 8px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+  }
+  .components ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .components li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px 5px 5px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.92rem;
+  }
+  .letter {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid var(--sanguine);
+    color: var(--sanguine);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 600;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .patron {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 12px;
+  }
+  .patron img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    filter: sepia(0.55) saturate(0.8);
+    box-shadow: 0 0 0 1px var(--paper-edge), 0 0 0 5px var(--paper), 0 0 0 6px var(--paper-edge);
+  }
+
+  .account {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 56px;
+    margin-top: clamp(48px, 7vw, 88px);
+    align-items: start;
+  }
+  .plan {
+    position: sticky;
+    top: calc(var(--header-h) + 24px);
+    padding: 24px 26px;
+    border: 1px solid var(--paper-edge);
+    border-radius: 14px;
+    background: var(--card);
+  }
+  .plan.unfinished {
+    border-style: dashed;
+  }
+  .plan h2 {
+    font-size: 1.8rem;
+    font-style: italic;
+  }
+  .plan ul {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .plan li {
+    position: relative;
+    padding-left: 30px;
+  }
+  .plan li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.3em;
+    width: 15px;
+    height: 15px;
+    border: 1.3px solid var(--ink-3);
+    border-radius: 3px;
+    transform: rotate(-3deg);
+  }
+  .quote {
+    display: grid;
+    gap: 4px;
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .quote .italian {
+    font-size: 1.3rem;
+  }
+
+  .turn {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+    margin-top: clamp(56px, 8vw, 96px);
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+  .turn a {
+    text-decoration: none;
+  }
+  .turn-prev,
+  .turn-next {
+    display: grid;
+    gap: 2px;
+  }
+  .turn-next {
+    text-align: right;
+  }
+  .turn strong {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+  }
+  .turn-desk {
+    padding: 10px 18px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+  }
+
+  @media (max-width: 900px) {
+    .spread {
+      grid-template-columns: 1fr;
+    }
+    .spread::after {
+      display: none;
+    }
+    .verso {
+      border-bottom: 1px dashed var(--line);
+    }
+    .account {
+      grid-template-columns: 1fr;
+    }
+    .plan {
+      position: static;
+    }
+    .turn {
+      grid-template-columns: 1fr 1fr;
+    }
+    .turn-desk {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      justify-self: center;
+    }
+  }
+</style>

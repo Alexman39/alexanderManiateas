@@ -1,0 +1,86 @@
+---
+import { nav, site, socials } from '../data/site';
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="inner">
+    <div class="sign">
+      <p class="italian">“Tristo è quel discepolo che non avanza il suo maestro.”</p>
+      <p class="label">Poor is the pupil who does not surpass his master · Leonardo, notebooks</p>
+    </div>
+    <nav class="links" aria-label="Footer">
+      {nav.map((n) => <a href={n.href}>{n.label}</a>)}
+    </nav>
+    <div class="links">
+      <a href={`mailto:${site.email}`}>{site.email}</a>
+      {
+        socials.map((s) => (
+          <a href={s.href} rel="me noopener" target="_blank">
+            {s.label} ↗
+          </a>
+        ))
+      }
+    </div>
+  </div>
+  <div class="base">
+    <span class="label">© {year} {site.name}</span>
+    <button class="mirror label" type="button" aria-label="Written right to left, read left to right">
+      Written right to left, read left to right
+    </button>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--line);
+    padding: 56px var(--gutter) 28px;
+    background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--paper-deep) 60%, transparent));
+  }
+  .inner {
+    width: min(1240px, 100%);
+    margin-inline: auto;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: 32px;
+  }
+  .sign .italian {
+    font-size: 1.5rem;
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+  .links {
+    display: grid;
+    align-content: start;
+    gap: 6px;
+  }
+  .links a {
+    text-decoration: none;
+    color: var(--ink-2);
+    font-size: 0.95rem;
+    width: fit-content;
+  }
+  .links a:hover {
+    color: var(--sanguine);
+  }
+  .base {
+    width: min(1240px, 100%);
+    margin: 48px auto 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .base .mirror {
+    font-size: 0.68rem;
+    color: var(--ink-3);
+  }
+  @media (max-width: 760px) {
+    .inner {
+      grid-template-columns: 1fr 1fr;
+    }
+    .sign {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

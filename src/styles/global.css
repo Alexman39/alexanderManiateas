@@ -1,0 +1,477 @@
+@import '@fontsource-variable/cormorant-garamond/wght.css';
+@import '@fontsource-variable/cormorant-garamond/wght-italic.css';
+@import '@fontsource-variable/manrope/wght.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+/* ------------------------------------------------------------------ tokens */
+
+:root {
+  --paper: #efe4cb;
+  --paper-deep: #e5d5b2;
+  --paper-edge: #cbb487;
+  --ink: #2a1c10;
+  --ink-2: #5a4632;
+  --ink-3: #8c7658;
+  --pencil: #9a8b78;
+  --line: rgb(42 28 16 / 0.16);
+  --sanguine: #a3452b;
+  --sanguine-wash: rgb(163 69 43 / 0.12);
+  --verdigris: #3d6a5a;
+  --ochre: #b0812c;
+  --seal: #8f2a1c;
+  --card: rgb(255 250 238 / 0.45);
+  --shadow: 0 24px 48px -28px rgb(70 45 15 / 0.45), 0 2px 6px -2px rgb(70 45 15 / 0.18);
+  --grain-opacity: 0.55;
+  --grain-blend: multiply;
+  --vignette: rgb(120 85 40 / 0.28);
+
+  --font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Manrope Variable', 'Manrope', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --gutter: clamp(16px, 4vw, 48px);
+  --measure: 68ch;
+  --header-h: 68px;
+
+  color-scheme: light;
+}
+
+/* Night study: walnut, candlelight, the same inks. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #18120c;
+    --paper-deep: #211910;
+    --paper-edge: #3b2c1c;
+    --ink: #eddcbb;
+    --ink-2: #c6ae88;
+    --ink-3: #8f7a5a;
+    --pencil: #6f6150;
+    --line: rgb(237 220 187 / 0.13);
+    --sanguine: #e07d57;
+    --sanguine-wash: rgb(224 125 87 / 0.12);
+    --verdigris: #82b8a4;
+    --ochre: #dcaa4e;
+    --seal: #b8432f;
+    --card: rgb(40 30 20 / 0.5);
+    --shadow: 0 24px 48px -24px rgb(0 0 0 / 0.7), 0 2px 6px -2px rgb(0 0 0 / 0.5);
+    --grain-opacity: 0.35;
+    --grain-blend: screen;
+    --vignette: rgb(0 0 0 / 0.55);
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --paper: #18120c;
+  --paper-deep: #211910;
+  --paper-edge: #3b2c1c;
+  --ink: #eddcbb;
+  --ink-2: #c6ae88;
+  --ink-3: #8f7a5a;
+  --pencil: #6f6150;
+  --line: rgb(237 220 187 / 0.13);
+  --sanguine: #e07d57;
+  --sanguine-wash: rgb(224 125 87 / 0.12);
+  --verdigris: #82b8a4;
+  --ochre: #dcaa4e;
+  --seal: #b8432f;
+  --card: rgb(40 30 20 / 0.5);
+  --shadow: 0 24px 48px -24px rgb(0 0 0 / 0.7), 0 2px 6px -2px rgb(0 0 0 / 0.5);
+  --grain-opacity: 0.35;
+  --grain-blend: screen;
+  --vignette: rgb(0 0 0 / 0.55);
+  color-scheme: dark;
+}
+
+/* -------------------------------------------------------------------- base */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 16px);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background-color: var(--paper);
+  background-image: radial-gradient(ellipse at 50% 40%, transparent 55%, var(--vignette) 130%);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+/* Paper grain sits above everything but never catches the pointer. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: var(--grain-blend);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .33 0 0 0 0 .18 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: color-mix(in srgb, var(--sanguine) 55%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: color 0.2s, text-decoration-color 0.2s;
+}
+a:hover {
+  color: var(--sanguine);
+  text-decoration-color: var(--sanguine);
+}
+
+:focus-visible {
+  outline: 2px solid var(--sanguine);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--sanguine);
+  color: var(--paper);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------- primitives */
+
+.page {
+  width: min(1240px, 100% - 2 * var(--gutter));
+  margin-inline: auto;
+  padding-top: calc(var(--header-h) + clamp(32px, 6vw, 72px));
+  padding-bottom: clamp(64px, 10vw, 128px);
+}
+
+/* Small caps label used for eyebrows, metadata and captions. */
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.italian {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  color: var(--sanguine);
+}
+
+.display {
+  font-size: clamp(2.6rem, 7vw, 5.5rem);
+}
+
+.lead {
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 60ch;
+}
+
+/* Hairline rule with a compass-point at each end. */
+.rule {
+  position: relative;
+  height: 1px;
+  background: var(--line);
+  border: 0;
+  margin: clamp(40px, 6vw, 72px) 0;
+}
+.rule::before,
+.rule::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--ink-3);
+  border-radius: 50%;
+  background: var(--paper);
+}
+.rule::before { left: 0; }
+.rule::after { right: 0; }
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.75em 1.3em;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease), border-color 0.25s;
+}
+.button:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+.button.primary {
+  background: var(--sanguine);
+  border-color: var(--sanguine);
+  color: var(--paper);
+}
+.button.primary:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+/* Ink line art: every stroke can be drawn in with stroke-dashoffset (pathLength=1). */
+.sketch {
+  overflow: visible;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sketch .m { stroke: var(--ink); stroke-width: 1.5; }
+.sketch .t { stroke: var(--ink); stroke-width: 0.8; }
+.sketch .h { stroke: var(--ink-2); stroke-width: 0.6; opacity: 0.8; }
+.sketch .c { stroke: var(--sanguine); stroke-width: 0.6; stroke-dasharray: 2 3; opacity: 0.55; }
+.sketch .w { fill: var(--sanguine-wash); stroke: none; }
+.sketch .f { fill: var(--ink); stroke: none; }
+.sketch text {
+  fill: var(--sanguine);
+  stroke: none;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 9px;
+}
+.sketch .m,
+.sketch .t,
+.sketch .h {
+  stroke-dasharray: 1 0;
+}
+
+/* Graphite: not yet studied. */
+.sketch.is-pencil .m,
+.sketch.is-pencil .t,
+.sketch.is-pencil .h {
+  stroke: var(--pencil);
+}
+.sketch.is-pencil .w { opacity: 0; }
+.sketch.is-pencil text { fill: var(--pencil); }
+
+/* Non finito: strokes literally stop part-way. */
+.sketch.is-unfinished .m,
+.sketch.is-unfinished .t {
+  stroke: var(--pencil);
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 0.45;
+}
+.sketch.is-unfinished text { fill: var(--pencil); }
+.sketch.is-unfinished .h,
+.sketch.is-unfinished .w { opacity: 0; }
+
+/* Draw-in animation; delays are set per element from script. */
+.sketch.is-drawing .m,
+.sketch.is-drawing .t,
+.sketch.is-drawing .h {
+  stroke-dasharray: 1 1;
+  animation: ink-draw 1.4s var(--ease) both;
+}
+.sketch.is-drawing .w,
+.sketch.is-drawing text {
+  animation: ink-fade 1s ease both;
+  animation-delay: 0.9s;
+}
+.sketch.is-unfinished.is-drawing .m,
+.sketch.is-unfinished.is-drawing .t {
+  animation-name: ink-draw-partial;
+}
+@keyframes ink-draw-partial {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0.45; }
+}
+@keyframes ink-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes ink-fade {
+  from { opacity: 0; }
+}
+
+/* Mirror writing: reads backwards until you look closely. */
+.mirror {
+  display: inline-block;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.15em;
+  line-height: 1.3;
+  color: var(--sanguine);
+  text-align: inherit;
+  cursor: help;
+  transform: scaleX(-1);
+  transition: transform 0.7s var(--ease);
+}
+.mirror:hover,
+.mirror:focus-visible,
+.mirror.is-read {
+  transform: scaleX(1);
+}
+
+/* Long-form text: folios and articles. */
+.prose {
+  max-width: var(--measure);
+  font-size: 1.08rem;
+  color: var(--ink-2);
+}
+.prose > * + * { margin-top: 1em; }
+.prose h2 {
+  font-size: 2rem;
+  color: var(--ink);
+  margin-top: 1.6em;
+}
+.prose h3 {
+  font-size: 1.45rem;
+  color: var(--ink);
+  margin-top: 1.4em;
+}
+.prose h2:first-child { margin-top: 0; }
+.prose h2 + *, .prose h3 + * { margin-top: 0.4em; }
+.prose em {
+  font-family: var(--font-display);
+  font-size: 1.15em;
+  color: var(--sanguine);
+}
+.prose strong { color: var(--ink); }
+.prose ul { padding-left: 1.2em; }
+.prose li { margin: 0.3em 0; }
+.prose li::marker { color: var(--sanguine); }
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  display: block;
+  overflow-x: auto;
+}
+.prose th, .prose td {
+  text-align: left;
+  padding: 10px 14px 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.prose th {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* Wax-seal toasts, created by scripts/codex.ts. */
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 18px 12px 12px;
+  background: var(--paper);
+  border: 1px solid var(--paper-edge);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  animation: toast-in 0.6s var(--ease) both;
+}
+.toast.out {
+  animation: toast-out 0.5s ease forwards;
+}
+.toast strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.1;
+}
+.toast small {
+  color: var(--ink-2);
+  font-size: 0.85rem;
+}
+.wax {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 47% 53% 50% 48% / 52% 46% 54% 48%;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--seal) 70%, #fff 25%), var(--seal) 58%, color-mix(in srgb, var(--seal) 70%, #000 30%));
+  box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--seal) 75%, #000 15%), 0 3px 8px -2px rgb(80 20 10 / 0.5);
+  color: #f6dccb;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.96); }
+}
+@keyframes toast-out {
+  to { opacity: 0; transform: translateY(10px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .mirror { transform: none; }
+}

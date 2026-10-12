@@ -1,0 +1,42 @@
+---
+import Base from '../layouts/Base.astro';
+import Sketch from '../components/Sketch.astro';
+import { url } from '../data/site';
+---
+
+<Base title="Folio missing">
+  <div class="page missing">
+    <Sketch name="lens" state="unfinished" class="art" />
+    <p class="label">Errore 404</p>
+    <h1>This folio has been torn from the codex.</h1>
+    <p class="lead">Like many of Leonardo's pages, it's been lost along the way. The rest of the notebook is still here.</p>
+    <div class="actions">
+      <a class="button primary" href={url('projects')}>Open the codex</a>
+      <a class="button" href={url('')}>Home</a>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .missing {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    gap: 18px;
+    max-width: 720px;
+  }
+  .missing :global(.art) {
+    width: 180px;
+    height: 180px;
+  }
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+  }
+  .actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 8px;
+  }
+</style>

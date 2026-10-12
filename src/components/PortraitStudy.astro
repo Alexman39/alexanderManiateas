@@ -1,0 +1,108 @@
+---
+import { Image } from 'astro:assets';
+import portrait from '../assets/photos/profile.jpg';
+
+// Proportion study around the portrait: Vitruvian circle and square, golden sections, a scale bar.
+const phi = (1 + Math.sqrt(5)) / 2;
+const sq = { x: 55, y: 65, s: 290 };
+const g1 = sq.x + sq.s / phi;
+const g2 = sq.x + sq.s - sq.s / phi;
+const scale = Array.from({ length: 11 }, (_, i) => sq.x + (i * sq.s) / 10);
+---
+
+<figure class="study" data-study>
+  <svg class="sketch" viewBox="0 0 400 400" aria-hidden="true">
+    <g class="construction">
+      <line class="c" x1={sq.x} y1={sq.y} x2={sq.x + sq.s} y2={sq.y + sq.s} />
+      <line class="c" x1={sq.x + sq.s} y1={sq.y} x2={sq.x} y2={sq.y + sq.s} />
+      <line class="c" x1="200" y1="0" x2="200" y2="400" />
+      <line class="c" x1="0" y1="185" x2="400" y2="185" />
+      <line class="c" x1={g1} y1={sq.y - 20} x2={g1} y2={sq.y + sq.s + 20} />
+      <line class="c" x1={g2} y1={sq.y - 20} x2={g2} y2={sq.y + sq.s + 20} />
+      <path class="c" d={`M${sq.x} ${sq.y + sq.s} A${sq.s} ${sq.s} 0 0 1 ${sq.x + sq.s} ${sq.y}`} />
+    </g>
+    <g filter="url(#ink-wobble)">
+      <circle class="m" cx="200" cy="185" r="170" pathLength="1" />
+      <rect class="m" x={sq.x} y={sq.y} width={sq.s} height={sq.s} pathLength="1" />
+      <ellipse class="t" cx="200" cy="183" rx="98" ry="124" pathLength="1" />
+      <ellipse class="t" cx="200" cy="183" rx="104" ry="130" pathLength="1" />
+      <path
+        class="t"
+        pathLength="1"
+        d={`M${sq.x} 378 L${sq.x + sq.s} 378 ${scale.map((x, i) => `M${x} 378 L${x} ${i % 5 === 0 ? 368 : 372}`).join(' ')}`}
+      />
+      <path class="h" pathLength="1" d="M300 300 L330 330 M308 296 L336 324 M316 292 L340 316 M290 306 L322 338 M282 312 L314 344" />
+    </g>
+    <text x="40" y="58">a</text>
+    <text x="352" y="58">b</text>
+    <text x="352" y="368">c</text>
+    <text x="40" y="368">d</text>
+    <text x="196" y="395">I · II · III</text>
+  </svg>
+  <div class="portrait">
+    <Image src={portrait} alt="Portrait of Alexander Maniateas" widths={[320, 640]} sizes="(max-width: 900px) 50vw, 260px" loading="eager" />
+  </div>
+</figure>
+
+<script>
+  import { drawIn } from '../scripts/ink';
+  document.addEventListener('astro:page-load', () => {
+    drawIn(document.querySelector<SVGSVGElement>('[data-study] svg'), 100, 140);
+  });
+</script>
+
+<style>
+  .study {
+    position: relative;
+    margin: 0;
+    width: 100%;
+    aspect-ratio: 1;
+  }
+  .study svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .study .m {
+    stroke-width: 1.2;
+  }
+  .study text {
+    font-size: 13px;
+  }
+  .construction .c {
+    stroke-width: 0.8;
+  }
+  .portrait {
+    position: absolute;
+    left: 50%;
+    top: 45.75%;
+    width: 46%;
+    aspect-ratio: 98 / 124;
+    translate: -50% -50%;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: inset 0 0 40px rgb(60 35 10 / 0.35);
+  }
+  .portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 30%;
+    filter: sepia(0.75) saturate(0.75) contrast(1.05) brightness(0.98);
+    transition: filter 1.2s var(--ease), transform 1.2s var(--ease);
+  }
+  .study:hover .portrait img {
+    filter: none;
+    transform: scale(1.03);
+  }
+  /* Vignette the oval like an old print. */
+  .portrait::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow: inset 0 0 30px 6px color-mix(in srgb, var(--paper) 55%, transparent);
+    pointer-events: none;
+  }
+</style>

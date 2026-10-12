@@ -1,0 +1,295 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import portrait from '../assets/photos/profile.jpg';
+import { experience, languages, site, socials, url } from '../data/site';
+
+const skills = [
+  { name: 'Java', note: 'Object-oriented programming, application development' },
+  { name: 'JavaScript', note: 'Front-end development' },
+  { name: 'Responsive web & UI/UX', note: 'Mobile-first interfaces, clean UI' },
+  { name: 'System design', note: 'Fundamentals and application logic' },
+  { name: 'Debugging & performance', note: 'Finding the slow part, then fixing it' },
+  { name: 'Troubleshooting', note: 'Calm problem-solving, learnt on the support line' },
+];
+---
+
+<Base title="About" description="About Alexander Maniateas: Computer Science student, freelance web developer and Digital Systems Partner at FlexPro Coaching, based in Athens.">
+  <div class="page about">
+    <section class="intro">
+      <div class="intro-text">
+        <p class="label">About · Chi sono</p>
+        <h1>A developer who started in business, learnt on the phones, and never stopped studying.</h1>
+        <div class="prose">
+          <p>
+            I'm Alexander, a software developer in Athens. I'm studying for a BSc in Computer Science at Metropolitan
+            College, after four years of Business Administration at the University of the Aegean in Chios. That detour
+            taught me to think about the people and businesses behind the software.
+          </p>
+          <p>
+            I've freelanced since 2020, building custom, mobile-first websites for small businesses: talking to the
+            client, shaping what they need, then designing and building it. Three years in customer support at
+            Teleperformance taught me patience, and how to explain complex things simply.
+          </p>
+          <p>
+            Today I'm Digital Systems Partner at FlexPro Coaching, co-developing an online coaching platform, which
+            sits neatly where my two passions meet. Outside of code, I train seriously and I'm learning Russian.
+          </p>
+          <p>
+            I admire Leonardo da Vinci more than anyone: his curiosity, his discipline, his refusal to stay in one
+            lane. This site borrows his notebooks as its form. It's a reminder to keep studying.
+          </p>
+        </div>
+      </div>
+      <figure class="portrait">
+        <Image src={portrait} alt="Alexander Maniateas" widths={[400, 800]} sizes="(max-width: 900px) 80vw, 400px" />
+        <figcaption class="label">Ritratto · Athens</figcaption>
+      </figure>
+    </section>
+
+    <hr class="rule" />
+
+    <section class="grid">
+      <div>
+        <h2>Timeline</h2>
+        <ol class="timeline">
+          {
+            experience.map((e) => (
+              <li>
+                <span class="label when">{e.when}</span>
+                <h3>{e.title}</h3>
+                <p class="where">{e.where}</p>
+                <p class="note">{e.note}</p>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+
+      <div class="side">
+        <section>
+          <h2>Craft</h2>
+          <ul class="skills">
+            {
+              skills.map((s, i) => (
+                <li>
+                  <span class="letter">{'ABCDEF'[i]}</span>
+                  <span>
+                    <strong>{s.name}</strong>
+                    <small>{s.note}</small>
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        <section>
+          <h2>Languages</h2>
+          <dl class="langs">
+            {
+              languages.map((l) => (
+                <div>
+                  <dt>{l.name}</dt>
+                  <dd class="label">{l.level}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </section>
+
+        <section class="contact">
+          <h2>Write to me</h2>
+          <p>Work, collaboration, or a good book on Leonardo, my inbox is open.</p>
+          <a class="button primary" href={`mailto:${site.email}`}>{site.email}</a>
+          {
+            socials.length > 0 && (
+              <p class="social-links">
+                {socials.map((s) => (
+                  <a href={s.href} rel="me noopener" target="_blank">
+                    {s.label} ↗
+                  </a>
+                ))}
+              </p>
+            )
+          }
+          <a class="label see-codex" href={url('projects')}>Or explore the codex →</a>
+        </section>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .intro {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: clamp(32px, 6vw, 96px);
+    align-items: start;
+  }
+  .intro-text {
+    display: grid;
+    gap: 28px;
+  }
+  .intro h1 {
+    font-size: clamp(2.3rem, 4.6vw, 3.8rem);
+  }
+  .portrait {
+    margin: 0;
+    position: sticky;
+    top: calc(var(--header-h) + 32px);
+    display: grid;
+    gap: 10px;
+  }
+  .portrait img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: 50% 25%;
+    border-radius: 200px 200px 12px 12px;
+    filter: sepia(0.55) saturate(0.8) contrast(1.03);
+    box-shadow: 0 0 0 1px var(--paper-edge), 0 0 0 10px var(--paper), 0 0 0 11px var(--paper-edge), var(--shadow);
+    transition: filter 1.2s var(--ease);
+  }
+  .portrait:hover img {
+    filter: none;
+  }
+  .portrait figcaption {
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: clamp(32px, 6vw, 96px);
+  }
+  h2 {
+    font-size: 2.2rem;
+    margin-bottom: 20px;
+  }
+
+  .timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 28px;
+    border-left: 1px dashed var(--sanguine);
+    display: grid;
+    gap: 32px;
+  }
+  .timeline li {
+    position: relative;
+  }
+  .timeline li::before {
+    content: '';
+    position: absolute;
+    left: -34px;
+    top: 6px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 1.5px solid var(--sanguine);
+    background: var(--paper);
+  }
+  .timeline h3 {
+    font-size: 1.6rem;
+    margin-top: 4px;
+  }
+  .where {
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .note {
+    color: var(--ink-2);
+    margin-top: 6px;
+  }
+
+  .side {
+    display: grid;
+    gap: 48px;
+    align-content: start;
+  }
+  .skills {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+  }
+  .skills li {
+    display: flex;
+    gap: 14px;
+    align-items: start;
+  }
+  .skills strong {
+    display: block;
+  }
+  .skills small {
+    color: var(--ink-2);
+    font-size: 0.9rem;
+  }
+  .letter {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--sanguine);
+    color: var(--sanguine);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 600;
+  }
+
+  .langs {
+    margin: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .langs div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .langs dt {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 600;
+  }
+  .langs dd {
+    margin: 0;
+  }
+
+  .contact {
+    display: grid;
+    gap: 14px;
+    justify-items: start;
+  }
+  .contact p {
+    color: var(--ink-2);
+  }
+  .social-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .see-codex {
+    text-decoration: none;
+  }
+
+  @media (max-width: 900px) {
+    .intro,
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .portrait {
+      position: static;
+      order: -1;
+      max-width: 340px;
+    }
+  }
+</style>

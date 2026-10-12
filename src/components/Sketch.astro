@@ -1,0 +1,30 @@
+---
+import { sketches } from './sketches';
+
+interface Props {
+  name: string;
+  /** ink = studied, pencil = not yet studied, unfinished = non finito */
+  state?: 'ink' | 'pencil' | 'unfinished';
+  label?: string;
+  class?: string;
+}
+
+const { name, state = 'ink', label, class: className } = Astro.props;
+// Strokes get pathLength=1 so the draw-in animation works for any length.
+// Construction lines (.c) keep real units so their dash pattern stays even.
+const markup = (sketches[name] ?? '').replace(
+  /<(path|line|circle|rect|ellipse) class="(m|t|h)"/g,
+  '<$1 class="$2" pathLength="1"',
+);
+---
+
+<svg
+  class:list={['sketch', `is-${state}`, className]}
+  viewBox="-10 -10 220 220"
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  data-sketch={name}
+>
+  <g filter="url(#ink-wobble)" set:html={markup} />
+</svg>

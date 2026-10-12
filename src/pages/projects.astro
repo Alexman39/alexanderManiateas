@@ -1,0 +1,116 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Desk from '../components/codex/Desk.astro';
+import FolioIndex from '../components/codex/FolioIndex.astro';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.folio - b.data.folio);
+const finished = projects.filter((p) => p.data.status !== 'non-finito').length;
+---
+
+<Base
+  title="Projects · Il Codice"
+  description="Alexander Maniateas's projects, laid out as a Leonardo-style codex you can explore: client work, studies and machines."
+>
+  <div class="codex-page" data-codex data-view="index">
+    <header class="intro">
+      <div>
+        <p class="label">Il Codice · The Codex</p>
+        <h1>Things I've made, kept the way <em>Leonardo</em> kept his notebooks.</h1>
+      </div>
+      <div class="intro-side">
+        <p>
+          Every project is a folio. Pencil sketches are waiting to be studied; open one and it's inked into your
+          copy of the codex. Half-drawn ones are <em class="italian">non finito</em>, still on the workbench.{' '}
+          {finished} finished, {projects.length - finished} in the workshop.
+        </p>
+        <div class="view-switch" role="group" aria-label="View">
+          <button type="button" data-view-button="desk" aria-pressed="false">Desk</button>
+          <button type="button" data-view-button="index" aria-pressed="true">Index</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="view view-desk">
+      <Desk projects={projects} />
+    </div>
+    <div class="view view-index">
+      <FolioIndex projects={projects} />
+    </div>
+  </div>
+</Base>
+
+<script>
+  import '../scripts/desk';
+</script>
+
+<style>
+  .codex-page {
+    width: min(1480px, 100% - 2 * var(--gutter));
+    margin-inline: auto;
+    padding-top: calc(var(--header-h) + 28px);
+    padding-bottom: 96px;
+  }
+
+  .intro {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 16px 56px;
+    align-items: end;
+    margin-bottom: 22px;
+  }
+  .intro h1 {
+    font-size: clamp(2rem, 3.4vw, 3rem);
+    margin-top: 8px;
+  }
+  .intro h1 em {
+    color: var(--sanguine);
+    font-weight: 500;
+  }
+  .intro-side {
+    display: grid;
+    gap: 14px;
+    justify-items: start;
+    color: var(--ink-2);
+    font-size: 0.98rem;
+  }
+
+  .view-switch {
+    display: inline-flex;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+  }
+  .view-switch button {
+    padding: 7px 18px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--ink-2);
+  }
+  .view-switch button[aria-pressed='true'] {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  /* Without script only the index exists; the switch appears once the desk is ready. */
+  .codex-page:not(.js-ready) .view-switch,
+  .codex-page:not(.js-ready) .view-desk {
+    display: none;
+  }
+  .codex-page[data-view='desk'] .view-index,
+  .codex-page[data-view='index'] .view-desk {
+    display: none;
+  }
+
+  @media (max-width: 900px) {
+    .intro {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

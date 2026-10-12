@@ -1,0 +1,96 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { url } from '../data/site';
+
+const articles = (await getCollection('articles')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const fmt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<Base title="Articles" description="Writing by Alexander Maniateas on software development, student life and the road from customer support to code.">
+  <div class="page">
+    <header class="head">
+      <p class="label">Quaderno · Notebook</p>
+      <h1>Writing on software, study, and the long road into tech.</h1>
+      <p class="lead">Longer thoughts on coding, education, freelancing and personal growth, newest first.</p>
+    </header>
+
+    <ol class="entries">
+      {
+        articles.map((a, i) => (
+          <li>
+            <a href={url(`articles/${a.id}`)}>
+              <span class="num" aria-hidden="true">{String(articles.length - i).padStart(2, '0')}</span>
+              <time class="label" datetime={a.data.date.toISOString()}>
+                {fmt.format(a.data.date)}
+              </time>
+              <h2>{a.data.title}</h2>
+              <p>{a.data.summary}</p>
+              <span class="label read">Read →</span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</Base>
+
+<style>
+  .head {
+    display: grid;
+    gap: 18px;
+    max-width: 900px;
+    margin-bottom: clamp(40px, 6vw, 72px);
+  }
+  .head h1 {
+    font-size: clamp(2.4rem, 5vw, 4.2rem);
+  }
+  .entries {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .entries a {
+    position: relative;
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 8px 32px;
+    padding: 36px 0;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+  }
+  .num {
+    grid-row: span 4;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 3rem;
+    line-height: 1;
+    color: var(--sanguine);
+    opacity: 0.7;
+  }
+  .entries h2 {
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    transition: color 0.2s;
+  }
+  .entries a:hover h2 {
+    color: var(--sanguine);
+  }
+  .entries p {
+    color: var(--ink-2);
+    max-width: 70ch;
+  }
+  .read {
+    margin-top: 6px;
+    color: var(--sanguine);
+  }
+  @media (max-width: 640px) {
+    .entries a {
+      grid-template-columns: 1fr;
+    }
+    .num {
+      grid-row: auto;
+      font-size: 2rem;
+    }
+  }
+</style>

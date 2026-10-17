@@ -11,7 +11,7 @@ links:
   live: https://maniateas52.wixstudio.com/my-site
 logo: ../../assets/projects/c-strategy.jpg
 sketch: trebuchet
-desk: { x: 230, y: 390, size: 250 }
+desk: { x: 260, y: 380, size: 250 }
 related: [metaforiki-lappas]
 note: Strategy first, pixels second.
 gallery:

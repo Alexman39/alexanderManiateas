@@ -97,7 +97,7 @@ function initCodex(root: HTMLElement) {
   function apply() {
     world.style.transform = `translate3d(${cam.x}px, ${cam.y}px, 0) scale(${cam.k})`;
     // Keep captions and domain names legible at any zoom.
-    const cap = Math.min(18, Math.max(13, 16 * cam.k)) / cam.k / 16;
+    const cap = Math.min(18, Math.max(11, 16 * cam.k)) / cam.k / 16;
     world.dataset.lod = cam.k < 0.5 ? 'far' : 'near';
     world.style.setProperty('--cap', cap.toFixed(3));
     world.style.setProperty('--domain-size', `${(Math.min(60, Math.max(24, 60 * cam.k)) / cam.k).toFixed(1)}px`);

@@ -1,0 +1,187 @@
+---
+import { useT, type Lang } from '../../i18n';
+
+interface Props {
+  lang: Lang;
+  frequencies: number[];
+  amplitudes: number[];
+  seconds: number;
+}
+
+const { lang, frequencies, amplitudes, seconds } = Astro.props;
+const t = useT(lang);
+
+// The same maths as the Python script: a sum of sines, normalised to ±1,
+// plotted over the first 1,000 samples at 44.1 kHz.
+const rate = 44100;
+const samples = 1000;
+const raw = Array.from({ length: samples }, (_, i) =>
+  frequencies.reduce((sum, f, k) => sum + amplitudes[k] * Math.sin((2 * Math.PI * f * i) / rate), 0),
+);
+// Normalise against the peak of the whole clip, as the script does with np.max.
+let peak = 0;
+for (let i = 0; i < rate * seconds; i += 7) {
+  const v = frequencies.reduce((sum, f, k) => sum + amplitudes[k] * Math.sin((2 * Math.PI * f * i) / rate), 0);
+  peak = Math.max(peak, Math.abs(v));
+}
+const W = 800;
+const H = 260;
+const pad = { l: 56, r: 16, t: 20, b: 40 };
+const x = (i: number) => pad.l + (i / (samples - 1)) * (W - pad.l - pad.r);
+const y = (v: number) => pad.t + (1 - (v / peak + 1) / 2) * (H - pad.t - pad.b);
+const d = raw.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join('');
+const span = (samples / rate).toFixed(3);
+---
+
+<section class="folio-section oscillator" aria-labelledby="osc-title" data-oscillator>
+  <header class="folio-section-head">
+    <h2 id="osc-title">{t('folio.listen')}</h2>
+    <p>{t('folio.listenText', { freqs: frequencies.join(' · ') })}</p>
+  </header>
+
+  <figure class="plot">
+    <svg class="sketch" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t('folio.plotTitle')}>
+      <g class="grid">
+        {[-1, -0.5, 0, 0.5, 1].map((v) => <line x1={pad.l} x2={W - pad.r} y1={y(v * peak)} y2={y(v * peak)} />)}
+        {[0, 0.25, 0.5, 0.75, 1].map((f) => <line y1={pad.t} y2={H - pad.b} x1={x(f * (samples - 1))} x2={x(f * (samples - 1))} />)}
+      </g>
+      <path class="m trace" d={d} pathLength="1" filter="url(#ink-wobble)" />
+      <g class="axis">
+        <text x={pad.l - 10} y={y(peak) + 4} text-anchor="end">1</text>
+        <text x={pad.l - 10} y={y(0) + 4} text-anchor="end">0</text>
+        <text x={pad.l - 10} y={y(-peak) + 4} text-anchor="end">−1</text>
+        <text x={pad.l} y={H - 12}>0</text>
+        <text x={W - pad.r} y={H - 12} text-anchor="end">{span} s</text>
+      </g>
+    </svg>
+    <figcaption class="label">{t('folio.plotTitle')}</figcaption>
+  </figure>
+
+  <div class="controls">
+    <button
+      type="button"
+      class="button primary"
+      data-play
+      data-frequencies={frequencies.join(',')}
+      data-amplitudes={amplitudes.join(',')}
+      data-seconds={seconds}
+      data-label-play={t('folio.play')}
+      data-label-stop={t('folio.stop')}
+    >
+      {t('folio.play')}
+    </button>
+  </div>
+</section>
+
+<script>
+  import { record } from '../../scripts/codex';
+  import { drawIn } from '../../scripts/ink';
+
+  let ctx: AudioContext | null = null;
+  let stopAt: (() => void) | null = null;
+
+  document.addEventListener('astro:page-load', () => {
+    const trace = document.querySelector<SVGPathElement>('[data-oscillator] .trace');
+    if (trace) drawIn(trace.ownerSVGElement, 200, 0);
+  });
+  document.addEventListener('astro:before-swap', () => stopAt?.());
+
+  document.addEventListener('click', (e) => {
+    const button = (e.target as Element).closest<HTMLButtonElement>('[data-play]');
+    if (!button) return;
+    if (stopAt) return stopAt();
+
+    const freqs = button.dataset.frequencies!.split(',').map(Number);
+    const amps = button.dataset.amplitudes!.split(',').map(Number);
+    const seconds = Number(button.dataset.seconds);
+    ctx ??= new AudioContext();
+    const now = ctx.currentTime;
+
+    // Fade in and out so the clip starts and ends without a click.
+    const master = ctx.createGain();
+    const level = 0.6 / amps.reduce((a, b) => a + b, 0);
+    master.gain.setValueAtTime(0, now);
+    master.gain.linearRampToValueAtTime(level, now + 0.08);
+    master.gain.setValueAtTime(level, now + seconds - 0.3);
+    master.gain.linearRampToValueAtTime(0, now + seconds);
+    master.connect(ctx.destination);
+
+    const oscillators = freqs.map((f, k) => {
+      const osc = ctx!.createOscillator();
+      const gain = ctx!.createGain();
+      osc.frequency.value = f;
+      gain.gain.value = amps[k];
+      osc.connect(gain).connect(master);
+      osc.start(now);
+      osc.stop(now + seconds);
+      return osc;
+    });
+
+    const finish = () => {
+      oscillators.forEach((o) => {
+        try {
+          o.stop();
+        } catch {}
+      });
+      master.disconnect();
+      button.textContent = button.dataset.labelPlay!;
+      button.classList.remove('is-playing');
+      stopAt = null;
+    };
+    oscillators[0].addEventListener('ended', finish);
+    stopAt = finish;
+    button.textContent = button.dataset.labelStop!;
+    button.classList.add('is-playing');
+    record('demo');
+  });
+</script>
+
+<style>
+  .plot {
+    margin: 0;
+    padding: clamp(16px, 3vw, 28px);
+    border: 1px solid var(--paper-edge);
+    border-radius: 14px;
+    background: var(--card);
+    box-shadow: var(--shadow);
+  }
+  .plot svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .grid line {
+    stroke: var(--sanguine);
+    stroke-width: 0.8;
+    stroke-dasharray: 3 6;
+    opacity: 0.35;
+  }
+  .trace {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 2;
+    stroke-linejoin: round;
+  }
+  .axis text {
+    fill: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  .plot figcaption {
+    margin-top: 10px;
+    text-align: center;
+  }
+  .controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 22px;
+  }
+  .is-playing {
+    animation: hum 1.2s ease-in-out infinite;
+  }
+  @keyframes hum {
+    50% {
+      box-shadow: 0 0 0 8px var(--sanguine-wash);
+    }
+  }
+</style>

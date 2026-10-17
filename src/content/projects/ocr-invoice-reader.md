@@ -10,7 +10,7 @@ summary: Upload a scanned invoice or receipt. OCR with Greek language support pu
 role: Author
 stack: [Tesseract OCR, Java · Spring Boot, Web UI]
 sketch: eye
-desk: { x: 2310, y: 1070, size: 340 }
+desk: { x: 2830, y: 1090, size: 340 }
 note: Read the ΑΦΜ, the date, the total, then let a human check.
 plan:
   - OCR with Greek language support

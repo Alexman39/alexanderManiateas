@@ -45,6 +45,10 @@ const projects = defineCollection({
         .default([]),
       /** A live app that can run inside the folio. */
       embed: z.url().optional(),
+      /** A sound the folio can play, as in the Python simulator: sine waves summed. */
+      sound: z
+        .object({ frequencies: z.array(z.number()), amplitudes: z.array(z.number()), seconds: z.number() })
+        .optional(),
     }),
 });
 

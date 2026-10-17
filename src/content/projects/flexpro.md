@@ -9,7 +9,7 @@ role: Digital Systems Partner
 years: 2025 –
 stack: [Flutter, Firebase]
 sketch: vitruvian
-desk: { x: 1300, y: 690, size: 380 }
+desk: { x: 1600, y: 720, size: 380 }
 note: Every screen is a step in the client's journey.
 plan:
   - Alpha with the first coaching clients

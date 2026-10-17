@@ -11,7 +11,7 @@ links:
   live: https://maniateas52.wixsite.com/metaforikilappas
 logo: ../../assets/projects/metaforiki-lappas.png
 sketch: cart
-desk: { x: 640, y: 330, size: 250 }
+desk: { x: 700, y: 330, size: 250 }
 note: In logistics, trust is the cargo.
 gallery:
   - { src: ../../assets/projects/metaforiki-lappas/home.jpg, caption: 'The home page, with buttons to call or ask for a quote straight away' }

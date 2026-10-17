@@ -9,7 +9,7 @@ summary: Utilities for Greek text, including accent stripping, Greeklish ↔ Gre
 role: Author
 stack: [JavaScript, npm]
 sketch: quill
-desk: { x: 450, y: 1340, size: 230 }
+desk: { x: 430, y: 1500, size: 230 }
 related: [ocr-invoice-reader]
 note: Άλφα to alpha, and back again.
 plan:

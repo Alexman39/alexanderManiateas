@@ -12,7 +12,7 @@ links:
   repo: https://github.com/Alexman39/College-Compass
 logo: ../../assets/projects/college-compass.png
 sketch: compass
-desk: { x: 230, y: 1130, size: 260 }
+desk: { x: 230, y: 1100, size: 260 }
 related: [arduinolearn]
 note: Built for my classmates. No more digging through Moodle.
 plan:

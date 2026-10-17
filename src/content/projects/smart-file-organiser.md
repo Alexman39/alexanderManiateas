@@ -9,7 +9,7 @@ summary: A Java command-line tool that renames and sorts messy folders by date, 
 role: Author
 stack: [Java, JUnit]
 sketch: cabinet
-desk: { x: 2350, y: 390, size: 240 }
+desk: { x: 2850, y: 390, size: 240 }
 related: [metadata-extractor]
 note: Preview first. Then move.
 plan:

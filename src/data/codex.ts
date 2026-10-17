@@ -60,6 +60,7 @@ export const seals: { id: string; name: string; hint: L; glyph: string; rule: Se
   { id: 'specchio', name: 'Lo specchio', hint: { en: 'Read a note written in mirror script.', el: 'Διαβάστε μια σημείωση σε κατοπτρική γραφή.' }, glyph: 'Я', rule: { kind: 'event', event: 'mirror' } },
   { id: 'cartografo', name: 'Il cartografo', hint: { en: 'Find your way with the map.', el: 'Βρείτε τον δρόμο σας με τον χάρτη.' }, glyph: '✣', rule: { kind: 'event', event: 'map' } },
   { id: 'prova', name: 'La prova', hint: { en: 'Set a working machine running.', el: 'Θέστε σε λειτουργία μια μηχανή που δουλεύει.' }, glyph: '⚙', rule: { kind: 'event', event: 'demo' } },
+  { id: 'atleta', name: "L'atleta", hint: { en: 'Study every work of the body.', el: 'Μελετήστε κάθε έργο του σώματος.' }, glyph: 'A', rule: { kind: 'domain', domain: 'anatomia' } },
   { id: 'mecenate', name: 'Il mecenate', hint: { en: 'Study every commission.', el: 'Μελετήστε όλες τις παραγγελίες.' }, glyph: 'C', rule: { kind: 'domain', domain: 'commissioni' } },
   { id: 'studioso', name: 'Lo studioso', hint: { en: 'Study every study.', el: 'Μελετήστε όλες τις μελέτες.' }, glyph: 'S', rule: { kind: 'domain', domain: 'studi' } },
   { id: 'ingegnere', name: "L'ingegnere", hint: { en: 'Study every machine.', el: 'Μελετήστε όλες τις μηχανές.' }, glyph: 'M', rule: { kind: 'domain', domain: 'macchine' } },

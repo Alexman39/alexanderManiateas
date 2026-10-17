@@ -8,6 +8,7 @@ import Measures from '../../../components/folio/Measures.astro';
 import Plates from '../../../components/folio/Plates.astro';
 import Machine from '../../../components/folio/Machine.astro';
 import Parts from '../../../components/folio/Parts.astro';
+import Oscillator from '../../../components/folio/Oscillator.astro';
 import { domains, statuses } from '../../../data/codex';
 import { langParams, url, useT, type Lang } from '../../../i18n';
 import { getProjects, type Project } from '../../../i18n/content';
@@ -155,6 +156,7 @@ const letters = 'ABCDEFGHIJ';
     {p.highlights.length > 0 && <Measures lang={lang} items={p.highlights} />}
     {p.gallery.length > 0 && <Plates lang={lang} plates={p.gallery} />}
     {p.embed && <Machine lang={lang} src={p.embed} title={p.title} sketch={p.sketch} />}
+    {p.sound && <Oscillator lang={lang} {...p.sound} />}
     {p.features.length > 0 && <Parts lang={lang} items={p.features} />}
 
     <div class="account">

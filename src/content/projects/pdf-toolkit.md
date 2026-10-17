@@ -13,7 +13,7 @@ links:
   repo: https://github.com/Alexman39/PDF-Toolkit
 embed: https://alexman39.github.io/PDF-Toolkit/
 sketch: press
-desk: { x: 1900, y: 360, size: 240 }
+desk: { x: 2400, y: 360, size: 240 }
 related: [metadata-extractor]
 note: Your files never leave your desk.
 highlights:

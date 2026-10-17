@@ -28,7 +28,7 @@ const cells: Cell[] = featured
 const sizes = {
   featured: '(max-width: 900px) 100vw, 820px',
   side: '(max-width: 900px) 100vw, 400px',
-  single: featured ? '(max-width: 900px) 100vw, 400px' : '(max-width: 560px) 100vw, 610px',
+  single: featured ? '(max-width: 900px) 100vw, 400px' : n === 1 ? '(max-width: 960px) 100vw, 920px' : '(max-width: 560px) 100vw, 610px',
 };
 
 // A larger copy of each plate for the lightbox.
@@ -41,7 +41,7 @@ const full = await Promise.all(plates.map((p) => getImage({ src: p.src, width: M
     <p class="label">{t('folio.platesSub')}</p>
   </header>
 
-  <ul class:list={['grid', { pairs: !featured }]}>
+  <ul class:list={['grid', { pairs: !featured && n > 1, solo: n === 1 }]}>
     {
       cells.map((cell) => (
         <li class:list={['cell', cell.kind]}>
@@ -131,6 +131,10 @@ const full = await Promise.all(plates.map((p) => getImage({ src: p.src, width: M
   }
   .grid.pairs {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .grid.solo {
+    grid-template-columns: minmax(0, 920px);
+    justify-content: center;
   }
   .cell.featured {
     grid-column: span 2;

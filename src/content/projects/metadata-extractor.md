@@ -9,7 +9,7 @@ summary: Drop in images or PDFs to see their hidden metadata, including EXIF, pa
 role: Author
 stack: [JavaScript]
 sketch: lens
-desk: { x: 1980, y: 730, size: 240 }
+desk: { x: 2480, y: 730, size: 240 }
 related: [ocr-invoice-reader]
 note: Every file keeps a diary.
 plan:

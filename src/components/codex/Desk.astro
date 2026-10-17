@@ -11,8 +11,8 @@ interface Props {
 
 const { lang, projects } = Astro.props;
 const t = useT(lang);
-const W = 2600;
-const H = 1500;
+const W = 3200;
+const H = 1800;
 
 const bySlug = new Map(projects.map((p) => [p.id, p]));
 
@@ -34,9 +34,9 @@ const threads = projects.flatMap((p) =>
 // Golden rectangles and their spiral, drawn as construction in the lower margin.
 const golden = (() => {
   const phi = (1 + Math.sqrt(5)) / 2;
-  let x = 1010;
-  let y = 1090;
-  let w = 580;
+  let x = 1330;
+  let y = 1450;
+  let w = 540;
   let h = w / phi;
   let rects = '';
   let arcs = `M${x} ${y + h}`;
@@ -54,15 +54,15 @@ const golden = (() => {
 })();
 
 const domainLabels = [
-  { key: 'commissioni', x: 440, y: 140 },
-  { key: 'anatomia', x: 1300, y: 395 },
-  { key: 'studi', x: 450, y: 915 },
-  { key: 'macchine', x: 2130, y: 140 },
+  { key: 'commissioni', x: 480, y: 140 },
+  { key: 'anatomia', x: 1600, y: 410 },
+  { key: 'studi', x: 665, y: 910 },
+  { key: 'macchine', x: 2620, y: 140 },
 ] as const;
 
 const notes = [
-  { x: 1300, y: 1010, it: 'La sapienza è figliola della sperienza.', gloss: t('desk.note1') },
-  { x: 1880, y: 1010, it: 'Dimmi se mai fu fatta alcuna cosa.', gloss: t('desk.note2') },
+  { x: 1600, y: 1395, it: 'La sapienza è figliola della sperienza.', gloss: t('desk.note1') },
+  { x: 2620, y: 1450, it: 'Dimmi se mai fu fatta alcuna cosa.', gloss: t('desk.note2') },
 ];
 ---
 
@@ -76,23 +76,23 @@ const notes = [
     <div class="world" data-world data-w={W} data-h={H} style={`width:${W}px;height:${H}px`}>
       <svg class="ground" viewBox={`0 0 ${W} ${H}`} width={W} height={H} aria-hidden="true">
         <g class="construction">
-          <circle cx="1300" cy="690" r="340" />
-          <rect x="1030" y="420" width="540" height="540" />
-          <path d="M1030 420 L1570 960 M1570 420 L1030 960" />
-          <circle cx="440" cy="480" r="390" />
-          <circle cx="450" cy="1190" r="350" />
-          <circle cx="2130" cy="700" r="540" />
+          <circle cx="1600" cy="720" r="360" />
+          <rect x="1330" y="450" width="540" height="540" />
+          <path d="M1330 450 L1870 990 M1870 450 L1330 990" />
+          <circle cx="480" cy="480" r="400" />
+          <circle cx="665" cy="1290" r="560" />
+          <circle cx="2620" cy="740" r="560" />
           <path d={golden.rects} />
         </g>
         <path class="spiral" d={golden.arcs} />
-        <g class="rose" transform="translate(1300 245)">
+        <g class="rose" transform="translate(1600 255)">
           <circle r="62" />
           <circle r="54" class="thin" />
           <path d="M0 -84 L9 -9 L84 0 L9 9 L0 84 L-9 9 L-84 0 L-9 -9 Z" />
           <path d="M0 -84 L0 84 M-84 0 L84 0" class="thin" />
         </g>
-        <text class="cartouche" x="1300" y="96" text-anchor="middle">Il Codice di Alessandro</text>
-        <text class="cartouche-sub" x="1300" y="132" text-anchor="middle">{t('desk.sub')}</text>
+        <text class="cartouche" x="1600" y="96" text-anchor="middle">Il Codice di Alessandro</text>
+        <text class="cartouche-sub" x="1600" y="132" text-anchor="middle">{t('desk.sub')}</text>
         {threads.map((t) => <path class="thread" d={t.d} data-a={t.a} data-b={t.b} />)}
       </svg>
 
@@ -113,7 +113,7 @@ const notes = [
             <a
               class:list={['node', { unfinished, capolavoro: p.data.capolavoro }]}
               href={url(`projects/${p.id}`, lang)}
-              style={`left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px`}
+              style={`left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px;--w:${size}px`}
               data-node={p.id}
               data-x={x}
               data-y={y}
@@ -373,8 +373,11 @@ const notes = [
     justify-items: center;
     text-align: center;
     font-size: calc(16px * var(--cap, 1));
-    line-height: 1.2;
-    white-space: nowrap;
+    line-height: 1.15;
+    /* Long titles wrap onto two balanced lines when the desk is zoomed out. */
+    width: max-content;
+    max-width: calc(var(--w) * 1.5);
+    text-wrap: balance;
   }
   .node-caption strong {
     font-family: var(--font-display);

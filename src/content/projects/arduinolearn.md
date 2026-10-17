@@ -9,7 +9,7 @@ role: Designer & developer
 stack: []
 logo: ../../assets/projects/arduinolearn.png
 sketch: clockwork
-desk: { x: 660, y: 1100, size: 240 }
+desk: { x: 640, y: 1100, size: 240 }
 note: Step by step, from a blinking LED to a working machine.
 ---
 

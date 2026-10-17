@@ -9,7 +9,7 @@ role: Designer & developer
 stack: []
 logo: ../../assets/projects/spanishgreco.jpg
 sketch: bridge
-desk: { x: 440, y: 615, size: 250 }
+desk: { x: 480, y: 640, size: 250 }
 related: [greek-text-tools]
 note: Make booking a lesson easier than finding one.
 ---

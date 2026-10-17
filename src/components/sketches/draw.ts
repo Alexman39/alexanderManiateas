@@ -96,3 +96,24 @@ export function writing(x: number, y: number, w: number, rows: number, gap = 6, 
   }
   return path(d, cls);
 }
+
+/** A pointed leaf of length `len`, centred on (x, y) and turned by `angle` radians. */
+export function leaf(x: number, y: number, angle: number, len = 16, width = 6, cls = 't') {
+  const c = Math.cos(angle);
+  const sn = Math.sin(angle);
+  const at = (u: number, v: number) => `${r1(x + u * c - v * sn)} ${r1(y + u * sn + v * c)}`;
+  const h = len / 2;
+  return path(`M${at(-h, 0)}Q${at(0, -width)} ${at(h, 0)}Q${at(0, width)} ${at(-h, 0)}M${at(-h, 0)}L${at(h * 0.8, 0)}`, cls);
+}
+
+/** Sum of sines, drawn as a line: `harmonics` are [cycles across the width, amplitude]. */
+export function wave(x: number, y: number, w: number, h: number, harmonics: [number, number][], cls = 'm') {
+  const peak = harmonics.reduce((sum, [, a]) => sum + a, 0);
+  let d = '';
+  for (let i = 0; i <= 120; i++) {
+    const t = i / 120;
+    const v = harmonics.reduce((sum, [f, a]) => sum + a * Math.sin(2 * Math.PI * f * t), 0) / peak;
+    d += `${i ? 'L' : 'M'}${r1(x + t * w)} ${r1(y - v * h)}`;
+  }
+  return path(d, cls);
+}
